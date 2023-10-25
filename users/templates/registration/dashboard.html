@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel{% endblock title %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href={% static 'users/style.css' %}>
+{% endblock stylesheets %}
+
+{% block navbarPlace %}
+    {% include "navbar.html" %}
+{% endblock navbarPlace %}
+
+{% block content %}
+    <div class="container">
+        <div class="header-dashrow mb-5">
+            <div class="d-inline-block header-info">
+                <h1>Witaj <b>{{userName}}</b>!</h1>
+            </div>
+            <div class="d-inline-block">
+                <a class="btn btn-primary profile-option" href="{% url 'users:profile-edit' %}">Edytuj dane</a>
+                <a class="btn btn-primary profile-option" href="{% url 'users:password-change-view' %}">Zmień hasło</a>
+            </div>
+        </div>
+        {% if aboutUser|length >= 1 %}
+            <h3 class="">O tobie</h3>
+            <div class="user-info">
+                {{aboutUser}}
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}

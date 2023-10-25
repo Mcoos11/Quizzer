@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Logowanie{% endblock title %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href={% static 'users/style.css' %}>
+{% endblock stylesheets %}
+
+{% block scripts %}
+    <script src="{% static 'users/main.js' %}" defer></script>
+{% endblock scripts %}
+
+{% load crispy_forms_tags %}
+
+{% block navbarPlace %}
+    {% include "navbar.html" %}
+{% endblock navbarPlace %}
+
+{% block content %}
+    <div class="form-wrap">
+        <h1>Logowanie</h1>
+        <form id="login_form" method="POST">
+            {% csrf_token %}{{ form|crispy }}
+            <input id="password-toggle" type="checkbox" onclick="passwordToggle()"> 
+            <label for="password-toggle">Pokaż hasło</label>
+            <br><br>
+            <p>Nie masz konta? Załóż je <a href="{% url 'users:register-view' %}">TUTAJ</a>!</p>
+            <p>Nie pamiętasz hasła? Odzyskaj hasło <a href="{% url 'users:password-reset-view' %}">TUTAJ</a>!</p>
+            <button type="submit" class="btn btn-secondary mt-3">Zaloguj</button>
+        </form>
+    </div>
+{% endblock content %}

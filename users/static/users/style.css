@@ -1,0 +1,32 @@
+/*----Dashboard----*/
+.user-info{
+    margin-bottom: 2rem;
+    background-color: rgba(255, 255, 255, 0.65) !important;
+    border-radius: 20px;
+    padding: 1rem;
+    font-size: 2vh;
+}
+.header-dashrow{
+    display: flex;
+    justify-content: space-between;
+}
+@media only screen and (max-width: 600px) {
+    .profile-option{
+        margin-top: 0.7rem;
+    }
+}
+
+/*----Settings----*/
+.setting-list{
+    list-style: none;
+}
+
+/*----Login----*/
+#password-toggle:hover{
+    cursor: pointer;
+}
+@media only screen and (min-width: 992px) {
+    .form-wrap{
+        width: 45%;
+    }
+}
