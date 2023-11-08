@@ -46,8 +46,12 @@ INSTALLED_APPS = [
     "captcha",
     "bootstrap_datepicker_plus",
     "django_cleanup",
+    'django_extensions',
 
     "users",
+    "quizzes",
+    "surveys",
+    "forum",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
