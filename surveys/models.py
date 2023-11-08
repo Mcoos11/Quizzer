@@ -48,7 +48,7 @@ class SurveyQuestion(models.Model):
         answers = list(self.answer_set.all())
         return answers
 
-class Answer(models.Model):
+class SurveyAnswer(models.Model):
     text = models.CharField(max_length=200)
     question = models.ForeignKey(SurveyQuestion, on_delete=models.CASCADE)
     other = models.BooleanField(default=False)

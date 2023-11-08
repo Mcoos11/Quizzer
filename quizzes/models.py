@@ -54,7 +54,7 @@ class QuizQuestion(models.Model):
         random.shuffle(answers)
         return answers
 
-class Answer(models.Model):
+class QuizAnswer(models.Model):
     text = models.CharField(max_length=200)
     correct = models.BooleanField(default=False)
     question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
