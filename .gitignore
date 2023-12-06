@@ -159,3 +159,6 @@ cython_debug/
 #.idea/
 
 passes.txt
+
+# node-modules
+frontend/node_modules/
