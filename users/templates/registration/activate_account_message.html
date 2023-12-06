@@ -1,7 +1,0 @@
-{% autoescape off %}
-Cześć {{ user.username }},
-
-Kliknij w link poniżej aby potwierdzić rejestrację:
-
-{{ protocol }}://{{ domain }}{% url 'users:activate' uidb64=uid token=token %}
-{% endautoescape %}
