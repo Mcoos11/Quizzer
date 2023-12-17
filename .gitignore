@@ -161,3 +161,6 @@ passes.txt
 
 # node-modules
 frontend/node_modules/
+
+# static dirs
+authentication/static/

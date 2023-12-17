@@ -14,9 +14,11 @@ services:
     volumes:
       - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
       - react_build:/var/www/react
+      - ./authentication/static:/static
     depends_on:
       - frontend
       - web-auth
+      - web-quiz-editor
 
   db-auth:
     image: postgres
@@ -32,7 +34,7 @@ services:
   web-auth:
     build: 
       context: ./authentication
-    command: gunicorn authentication.wsgi --bind 0.0.0.0:8000
+    command: bash initialize.sh
     volumes:
       - ./authentication:/code
     ports:
@@ -51,7 +53,7 @@ services:
     ports:
       - "5432:5432"
 
-  web-quiz-editior:
+  web-quiz-editor:
     build: 
       context: ./quizmaker
     command: gunicorn quizmaker.wsgi --bind 0.0.0.0:8000
