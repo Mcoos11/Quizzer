@@ -164,3 +164,7 @@ frontend/node_modules/
 
 # static dirs
 authentication/static/
+
+# databases
+data-auth/
+data-quiz/
