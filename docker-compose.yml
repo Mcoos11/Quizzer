@@ -64,16 +64,17 @@ services:
     depends_on:
       - db-quiz
 
-#  courses:
-#    build:
-#      context: ./courses
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8002:8000"
-#    volumes:
-#      - .:/code
-#    depends_on:
-#      - db-courses
+  courses:
+    build:
+      context: ./courses
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8000"
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./courses:/code
+    depends_on:
+      - db-courses
 
 
   db-courses:
