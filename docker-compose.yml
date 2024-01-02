@@ -32,7 +32,7 @@ services:
      - "6432:5432"
 
   web-auth:
-    build: 
+    build:
       context: ./authentication
     command: bash initialize.sh
     volumes:
@@ -54,7 +54,7 @@ services:
       - "5432:5432"
 
   web-quiz-editor:
-    build: 
+    build:
       context: ./quizmaker
     command: gunicorn quizmaker.wsgi --bind 0.0.0.0:8000
     volumes:
@@ -63,6 +63,30 @@ services:
       - "8000:8000"
     depends_on:
       - db-quiz
+
+#  courses:
+#    build:
+#      context: ./courses
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8002:8000"
+#    volumes:
+#      - .:/code
+#    depends_on:
+#      - db-courses
+
+
+  db-courses:
+    image: postgres
+    volumes:
+      - ./data-course:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "7432:5432"
+
 
 volumes:
   react_build:

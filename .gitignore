@@ -168,3 +168,6 @@ authentication/static/
 # databases
 data-auth/
 data-quiz/
+data-course/
+
+courses/data
