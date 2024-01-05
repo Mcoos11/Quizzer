@@ -20,7 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k&_7awb)fiv9rxpkq2vt9hbki3j%$^r1$&qoc8i7gcplw-0sf('
+# SECRET_KEY = 'django-insecure-k&_7awb)fiv9rxpkq2vt9hbki3j%$^r1$&qoc8i7gcplw-0sf('
+SECRET_KEY = "django-insecure-my!r_+7u12f%m*ks5ow1u+7c%yax39zbw(!)e(3i#tp&3p+t*x"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,7 +85,7 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny'
+        # 'rest_framework.permissions.AllowAny'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
