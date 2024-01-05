@@ -164,6 +164,7 @@ frontend/node_modules/
 
 # static dirs
 authentication/static/
+quizmaker/static/
 
 # databases
 data-auth/

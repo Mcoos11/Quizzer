@@ -18,10 +18,11 @@ ANSWERS_TYPE_CHOICES = [
 class Quiz(models.Model):
     name = models.CharField(max_length=120, verbose_name="Nazwa")
     topic = models.CharField(max_length=120, verbose_name="Temat")
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Autor")
+    author = models.PositiveIntegerField(null=True, verbose_name="Autor (ID)")
     number_of_questions = models.PositiveIntegerField(help_text="Liczba pytań w jednym podejściu", verbose_name="Liczba pytań")
     max_time = models.IntegerField(help_text="Maksymalny czas trwania tesu [min]", default=1, verbose_name="Czas na rozwiązanie")
     score_to_pass = models.PositiveIntegerField(help_text="Punkty wymagane do zaliczenia quizu [%]", verbose_name="Punkty wymagane do zaliczenia")
+    created_time = models.DateTimeField(auto_now_add=True)
     difficulty = models.CharField(max_length=9 , choices=DIFFICULTY_CHOICES, verbose_name="Poziom trudności")
 
     def __str__(self):
@@ -41,10 +42,12 @@ class Quiz(models.Model):
 class QuizQuestion(models.Model):
     text = models.CharField(max_length=200)
     quiz = models.ManyToManyField(Quiz, related_name="questions")
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Autor")
+    author = models.PositiveIntegerField(null=True, verbose_name="Autor (ID)")
     answers_type = models.CharField(max_length=11, choices=ANSWERS_TYPE_CHOICES, default='jednokrotny')
     created_time = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(null=True, blank=True, upload_to="question_images/")
+    public = models.BooleanField(default=False)
+    media = models.FileField(null=True, blank=True, upload_to="question_media/")
+    media_url = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return str(self.text) + " [Question]"
@@ -64,7 +67,7 @@ class QuizAnswer(models.Model):
     
 class QuizResult(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.PositiveIntegerField(null=True)
     score = models.IntegerField()
     date = models.DateField(auto_now_add=True)
     quiz_pass = models.BooleanField(default=False)

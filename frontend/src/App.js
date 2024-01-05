@@ -9,6 +9,7 @@ import ResetPassword from './containers/ResetPassword';
 import ResetPasswordConfirm from './containers/ResetPasswordConfirm';
 import Activate from './containers/Activate'
 import NoPage from './containers/NoPage';
+import CreateQuiz from './containers/CreateQuiz';
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/password/reset/confirm/:uid/:token" element={<ResetPasswordConfirm />} />
             <Route path="/activate/:uid/:token" element={<Activate />} />
             <Route path="*" element={<NoPage />} />
+            <Route path="/create-quiz" element={<CreateQuiz />} />
           </Routes>
         </Layout>
       </Router>

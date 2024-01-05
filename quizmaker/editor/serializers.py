@@ -4,4 +4,22 @@ from .models import Quiz, QuizQuestion, QuizAnswer, QuizResult, QuizFile
 class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
-        fields = ("name", "topic", "number_of_questions", "max_time", "score_to_pass", "difficulty")
+        fields = ("pk", "name", "topic", "number_of_questions", "max_time", "score_to_pass", "difficulty", "author")
+
+class QuizQuestionSerializer(serializers.ModelSerializer):
+    media = serializers.FileField(required=False)
+    media_url = serializers.URLField(required=False)
+
+    class Meta:
+        model = QuizQuestion
+        fields = ("pk", "text", "quiz", "author", "answers_type", "media", "media_url")
+
+class QuizAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizAnswer
+        fields = ("pk", "text", "correct", "question")
+
+# class QuizResultSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = QuizResult
+#         fields = ("name", "topic", "number_of_questions", "max_time", "score_to_pass", "difficulty")

@@ -57,7 +57,7 @@ export const load_user = () => async dispatch => {
     if(localStorage.getItem('access')){
         const config = {
             headers: {
-                'Content-Type': 'aplication/json',
+                'Content-Type': 'application/json',
                 'Authorization': `JWT ${localStorage.getItem('access')}`,
                 'Accept': 'application/json'
             }
@@ -90,6 +90,7 @@ export const login = (email, password) => async dispatch => {
     };
 
     const body = JSON.stringify({ email, password });
+    console.log(body);
 
     try {
         const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/jwt/create/`, body, config);
