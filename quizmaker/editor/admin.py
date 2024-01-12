@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import QuizAnswer, QuizQuestion, Quiz
+from .models import QuizAnswer, QuizQuestion, Quiz, QuizFile
 
 # Register your models here.
 
@@ -17,3 +17,5 @@ class QuestionAdmin(admin.ModelAdmin):
 admin.site.register(QuizQuestion, QuestionAdmin)
 
 admin.site.register(QuizAnswer)
+
+admin.site.register(QuizFile)

@@ -65,16 +65,6 @@ class QuizAnswer(models.Model):
     def __str__(self):
         return f"question: {self.question.text}, answer: {self.text}, correct: {self.correct} [Answer]"
     
-class QuizResult(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.SET_NULL, null=True)
-    user = models.PositiveIntegerField(null=True)
-    score = models.IntegerField()
-    date = models.DateField(auto_now_add=True)
-    quiz_pass = models.BooleanField(default=False)
-
-    def __str__(self):
-        return str(self.pk)
-    
 class QuizFile(models.Model):
     file_name = models.FileField(upload_to='import_quizzes_files/')
     upload_time = models.DateTimeField(auto_now_add=True)
