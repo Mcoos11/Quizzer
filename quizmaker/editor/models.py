@@ -19,6 +19,7 @@ class Quiz(models.Model):
     name = models.CharField(max_length=120, verbose_name="Nazwa")
     topic = models.CharField(max_length=120, verbose_name="Temat")
     author = models.PositiveIntegerField(null=True, verbose_name="Autor (ID)")
+    forum = models.PositiveIntegerField(null=True, default=None, verbose_name="Forum (ID)")
     number_of_questions = models.PositiveIntegerField(help_text="Liczba pytań w jednym podejściu", verbose_name="Liczba pytań")
     max_time = models.IntegerField(help_text="Maksymalny czas trwania tesu [min]", default=1, verbose_name="Czas na rozwiązanie")
     score_to_pass = models.PositiveIntegerField(help_text="Punkty wymagane do zaliczenia quizu [%]", verbose_name="Punkty wymagane do zaliczenia")
@@ -53,14 +54,14 @@ class QuizQuestion(models.Model):
         return str(self.text) + " [Question]"
 
     def get_answers(self):
-        answers = list(self.answer_set.all())
+        answers = list(self.answers.all())
         random.shuffle(answers)
         return answers
 
 class QuizAnswer(models.Model):
     text = models.CharField(max_length=200)
     correct = models.BooleanField(default=False)
-    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
+    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE, related_name="answers")
 
     def __str__(self):
         return f"question: {self.question.text}, answer: {self.text}, correct: {self.correct} [Answer]"

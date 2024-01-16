@@ -1,7 +1,6 @@
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
-from rest_framework import generics
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .models import Quiz, QuizQuestion, QuizAnswer, QuizFile
@@ -9,10 +8,17 @@ from .serializers import QuizSerializer, QuizQuestionSerializer, QuizAnswerSeria
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
-from rest_framework.decorators import api_view, permission_classes, action
+from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from rest_framework.decorators import api_view, permission_classes
 from django.http.response import HttpResponse
 from quizmaker.settings import MEDIA_ROOT
+from bs4 import BeautifulSoup
+from io import BytesIO
+from PIL import Image
 
+import base64
+import xml.etree.ElementTree as ET
 import os, csv
 
 # tworzenie/edycja/usuwanie quizu
@@ -78,6 +84,36 @@ class QuizViewSet(APIView):
             return Response("Błędny temat!", status=status.HTTP_400_BAD_REQUEST)
         query_set = Quiz.objects.filter(topic=topic).order_by('-created_time')
         return Response(QuizSerializer(query_set, many=True).data, status=status.HTTP_200_OK)
+    
+# zwaraca zestaw pytań z wybranego quizu w celu rozwiązania 
+class QuizQuestionViewSet(APIView):
+    permission_classes = (AllowAny,)
+    authentication_classes = (JWTTokenUserAuthentication,)
+
+    def get(self, request, quiz_pk):
+        res_questions = dict()
+        res_answers = dict()
+        res_question_n_answers = dict()
+        res_answers_types = dict()
+        
+        questions = Quiz.objects.get(pk=quiz_pk).get_questions()
+        for question in questions:
+            res_questions[question.pk] = question.text
+            res_answers_types[question.pk] = question.answers_type
+            res_question_n_answers[question.pk] = list()
+            for answer in question.get_answers():
+                res_answers[answer.pk] = answer.text
+                res_question_n_answers[question.pk].append(answer.pk)
+        
+        return JsonResponse(
+            {
+                'questions': res_questions,
+                'answers': res_answers,
+                'answers_types': res_answers_types,
+                'question_n_answers': res_question_n_answers
+            },
+            safe=False, status=status.HTTP_200_OK
+        )
 
 # tworzenie/edycja/usuwanie pytania
 class QuestionView(ModelViewSet):
@@ -133,7 +169,6 @@ def add_questions_csv(quiz_pk, file_object):
         reader = csv.reader(file, delimiter='\n') 
         for row in reader:
             row = row[0].split(';')
-            print(row)
             if (row[0] == '1' or row[0] == '0') and new_question != None:
                 QuizAnswer.objects.create(
                     text = row[1],
@@ -151,7 +186,44 @@ def add_questions_csv(quiz_pk, file_object):
     
 # dodawnie nowych pytań z pliku xml do bazy (NIE WIDOK)
 def add_questions_xml(quiz_pk, file_object):
-    pass
+    new_question = None
+    with open(file_object.file_name.path, 'r') as file:
+        data = file.read()
+        bs_data = BeautifulSoup(data, "xml")
+        bs_questions = bs_data.find_all('question')
+        for question in bs_questions:
+            question_image = question.find("image")
+            if question_image:
+                if question.find("image_base64"):
+                    image_code = question.find("image_base64").text
+                    image_data = image_code.encode()
+                    image = BytesIO(base64.b64decode(image_data))
+                    new_question = QuizQuestion.objects.create(
+                        text = question.find('questiontext').find("text").text,
+                        answers_type = "jednokrotny" if question['type'] == "shortanswer" else "wielokrotny",
+                    )
+                    new_question.media.save(f'xml_import_image.{Image.open(image).format}', ContentFile(image.getvalue()), save=True)
+                    new_question.save()
+                else:
+                    new_question = QuizQuestion.objects.create(
+                        text = question.find('questiontext').find('text').text,
+                        answers_type = "jednokrotny" if question['type'] == "shortanswer" else "wielokrotny",
+                        media_url = question_image.text
+                    )
+            else:
+                new_question = QuizQuestion.objects.create(
+                        text = question.find('questiontext').find('text').text,
+                        answers_type = "jednokrotny" if question['type'] == "shortanswer" else "wielokrotny"
+                    )
+            new_question.quiz.add(Quiz.objects.get(pk=quiz_pk))
+            
+            bs_answers = question.find_all('answer')
+            for answer in bs_answers:
+                QuizAnswer.objects.create(
+                    text = answer.find('text').text,
+                    correct = True if answer['fraction'] == "100" else False,
+                    question = new_question
+                )
     
 # odbieranie formularza z przesłanm plikiem csv z pytaniami do dodania,
 # wywoływanie funkcji z zapisem pytań do bazy
@@ -310,7 +382,7 @@ class AnswerViewSet(ModelViewSet):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def download_backup(request, quiz_pk):
+def download_backup_csv(request, quiz_pk):
     if request.method == 'GET':
         quiz = Quiz.objects.get(pk=quiz_pk)
         if not request.user.pk == quiz.author:
@@ -326,8 +398,64 @@ def download_backup(request, quiz_pk):
                     writer.writerow(['1' if answer.correct else '0', answer.text.replace('\ufeff', '')])
         with open(filepath, 'r', encoding="windows-1250") as response_file:
             response = HttpResponse(response_file, content_type='text/csv; charset=windows-1250')
-            print(os.path.basename(filepath))
-            response['Content-Disposition'] = f'attachment; filename={os.path.basename(filepath)}'
+            response['Content-Disposition'] = f'attachment; filename="Quiz_{quiz_pk}.csv"'
+
+        return response
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def download_backup_xml(request, quiz_pk):
+    if request.method == 'GET':
+        quiz = Quiz.objects.get(pk=quiz_pk)
+        # if not request.user.pk == quiz.author:
+        #     return Response({"To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
+        questions = QuizQuestion.objects.filter(quiz=quiz)
+        
+        xml_quiz = ET.Element('quiz')
+        for question in questions:
+            xml_question = ET.SubElement(xml_quiz, 'question')
+            if question.answers_type == 'wielokrotny':
+                xml_question.set('type', 'multichoice')
+            elif question.answers_type == 'jednokrotny':
+                xml_question.set('type', 'shortanswer')
+            ET.SubElement(ET.SubElement(xml_question, 'name'), 'text').text = f'[Question{question.pk}] {question.text}'
+            xml_question_text =  ET.SubElement(xml_question, 'questiontext')
+            xml_question_text.set('format', "html")
+            ET.SubElement(xml_question_text, 'text').text = question.text
+            if question.media_url:
+                ET.SubElement(xml_question, 'image').text = question.media_url
+            elif question.media:
+                with open(question.media.path, 'rb') as image_file:
+                    data = base64.b64encode(image_file.read())
+                    ET.SubElement(ET.SubElement(xml_question, 'image'), 'image_base64').text = data.decode()
+                                        
+            for answer in QuizAnswer.objects.filter(question=question):
+                xml_answer = ET.SubElement(xml_question, 'answer')
+                ET.SubElement(xml_answer, 'text').text = answer.text
+                xml_answer_feedback = ET.SubElement(xml_answer, 'feedback')
+                if answer.correct:
+                    xml_answer.set('fraction', "100")
+                    ET.SubElement(xml_answer_feedback, 'text').text = "Poprawna odpowiedź!"
+                else:
+                    xml_answer.set('fraction', "0")
+                    ET.SubElement(xml_answer_feedback, 'text').text = "Nie poprawna odpowiedź!"
+                ET.SubElement(xml_question, 'shuffleanswers').text = "1"
+                ET.SubElement(xml_question, 'answernumbering').text = "abc"
+                if question.answers_type == 'jednokrotny':
+                    ET.SubElement(xml_question, 'single').text = "true"
+                elif question.answers_type == 'wielokrotny':
+                    ET.SubElement(xml_question, 'single').text = "false"
+        
+        et = ET.tostring(xml_quiz)
+        filepath = os.path.join(MEDIA_ROOT, "backup_files_to_download", f'quiz_{quiz.name.lower().replace(" ", "_")}_backup.xml')
+        with open(filepath, 'wb') as response_file:
+            response_file.write(bytes('<?xml version="1.0" encoding="UTF-8" ?>', 'utf-8'))
+            response_file.write(et)
+        with open(filepath, 'r', encoding="utf-8") as response_file:
+            response = HttpResponse(response_file, content_type='application/force-download')
+            response['Content-Disposition'] = f'attachment; filename="Quiz_{quiz_pk}.xml"'
 
         return response
     else:

@@ -7,6 +7,7 @@ from .views import (
     UserQuizViewSet,
     QuizViewSet,
     QuestionViewSet,
+    QuizQuestionViewSet,
     AllQuestionViewSet,
     PublicQuestionViewSet,
     AnswerView,
@@ -14,7 +15,8 @@ from .views import (
     QuestionDeleteAll,
     
     file_question_upload,
-    download_backup,
+    download_backup_csv,
+    download_backup_xml,
 )
 main_router = routers.DefaultRouter()
 main_router.register(r'^quiz', QuizView, basename='quiz')
@@ -31,9 +33,11 @@ urlpatterns = [
     path('', include(main_router.urls)),
     
     path('quiz_set/', QuizViewSet.as_view(), name='quiz_set'),
+    path('quiz_questions_set/<int:quiz_pk>/', QuizQuestionViewSet.as_view(), name='quiz_question_set'),
     path('question_set/<int:quiz_pk>/', QuestionViewSet.as_view({'get': 'list'}), name='question_set'),
     path('file_question_upload/<int:quiz_pk>/', file_question_upload, name='file_question_upload'),
-    path('download_backup/<int:quiz_pk>/', download_backup, name='download_backup'),
+    path('download_backup_csv/<int:quiz_pk>/', download_backup_csv, name='download_backup_csv'),
+    path('download_backup_xml/<int:quiz_pk>/', download_backup_xml, name='download_backup_xml'),
     path('answer_set/<int:question_pk>/', AnswerViewSet.as_view({'get': 'list'}), name='answer_set'),
     
 ]
