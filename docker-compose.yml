@@ -23,6 +23,7 @@ services:
       - frontend
       - web-auth
       - web-quiz-editor
+      - web-survey-editor
 
   db-auth:
     image: postgres
@@ -68,6 +69,29 @@ services:
       - "8000:8000"
     depends_on:
       - db-quiz
+
+  db-survey:
+    image: postgres
+    volumes:
+      - ./data-survey:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "7432:5432"
+
+  web-survey-editor:
+    build: 
+      context: ./surveymaker
+    command: bash initialize.sh
+    volumes:
+      - ./surveymaker:/code
+      - media_root:/mediafiles
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db-survey
 
 volumes:
   react_build:

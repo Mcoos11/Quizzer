@@ -2,6 +2,8 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from .models import Quiz, QuizQuestion, QuizAnswer, QuizFile
 from .serializers import QuizSerializer, QuizQuestionSerializer, QuizAnswerSerializer, QuizFileSerializer
@@ -20,6 +22,11 @@ from PIL import Image
 import base64
 import xml.etree.ElementTree as ET
 import os, csv
+
+class StandardPagination(PageNumberPagination):
+    page_size = 1
+    page_size_query_param = 'page_size'
+    page_query_param = 'page'
 
 # tworzenie/edycja/usuwanie quizu
 class QuizView(ModelViewSet):
@@ -57,7 +64,7 @@ class QuizView(ModelViewSet):
         return Response({"Success": f'Usunięto quiz.'}, status=status.HTTP_200_OK)
 
 # zwaraca wszystkie quizy danego użytkownika 
-class UserQuizViewSet(ModelViewSet):
+class UserQuizViewSet(ModelViewSet, PageNumberPagination):
     queryset = Quiz.objects.none()
     serializer_class = QuizSerializer
     permission_classes = (IsAuthenticated,)
@@ -66,16 +73,20 @@ class UserQuizViewSet(ModelViewSet):
 
     def list(self, request):
         query_set = Quiz.objects.filter(author=request.user.id)
-        return Response(self.serializer_class(query_set, many=True).data, status=status.HTTP_200_OK)
+        query_set =  self.paginate_queryset(query_set, request, view=self)
+        serialize_data = self.serializer_class(query_set, many=True).data
+        return self.get_paginated_response(serialize_data)
     
 # zwaraca wszystkie quizy możliwe do wypęłnienia 
-class QuizViewSet(APIView):
+class QuizViewSet(APIView, PageNumberPagination):
     permission_classes = (AllowAny,)
     authentication_classes = (JWTTokenUserAuthentication,)
 
     def get(self, request):
         query_set = Quiz.objects.order_by('-created_time')
-        return Response(QuizSerializer(query_set, many=True).data, status=status.HTTP_200_OK)
+        query_set =  self.paginate_queryset(query_set, request, view=self)
+        serialize_data = QuizSerializer(query_set, many=True).data
+        return self.get_paginated_response(serialize_data)
     
     def post(self, request):
         try:
@@ -83,7 +94,9 @@ class QuizViewSet(APIView):
         except KeyError:
             return Response("Błędny temat!", status=status.HTTP_400_BAD_REQUEST)
         query_set = Quiz.objects.filter(topic=topic).order_by('-created_time')
-        return Response(QuizSerializer(query_set, many=True).data, status=status.HTTP_200_OK)
+        query_set = self.paginate_queryset(query_set, request, view=self)
+        serialize_data = QuizSerializer(query_set, many=True).data
+        return self.get_paginated_response(serialize_data)
     
 # zwaraca zestaw pytań z wybranego quizu w celu rozwiązania 
 class QuizQuestionViewSet(APIView):
@@ -200,20 +213,20 @@ def add_questions_xml(quiz_pk, file_object):
                     image = BytesIO(base64.b64decode(image_data))
                     new_question = QuizQuestion.objects.create(
                         text = question.find('questiontext').find("text").text,
-                        answers_type = "jednokrotny" if question['type'] == "shortanswer" else "wielokrotny",
+                        answers_type = "jednokrotny" if question.find('single').text == "true" else "wielokrotny",
                     )
                     new_question.media.save(f'xml_import_image.{Image.open(image).format}', ContentFile(image.getvalue()), save=True)
                     new_question.save()
                 else:
                     new_question = QuizQuestion.objects.create(
                         text = question.find('questiontext').find('text').text,
-                        answers_type = "jednokrotny" if question['type'] == "shortanswer" else "wielokrotny",
+                        answers_type = "jednokrotny" if question.find('single').text == "true" else "wielokrotny",
                         media_url = question_image.text
                     )
             else:
                 new_question = QuizQuestion.objects.create(
                         text = question.find('questiontext').find('text').text,
-                        answers_type = "jednokrotny" if question['type'] == "shortanswer" else "wielokrotny"
+                        answers_type = "jednokrotny" if question.find('single').text == "true" else "wielokrotny"
                     )
             new_question.quiz.add(Quiz.objects.get(pk=quiz_pk))
             
@@ -265,7 +278,7 @@ class QuestionDeleteAll(ModelViewSet):
     
 
 # zwraca wszystkie pytania quizie
-class QuestionViewSet(ModelViewSet):
+class QuestionViewSet(ModelViewSet, PageNumberPagination):
     queryset = QuizQuestion.objects.none()
     serializer_class = QuizQuestionSerializer
     permission_classes = (IsAuthenticated,)
@@ -275,11 +288,13 @@ class QuestionViewSet(ModelViewSet):
     def list(self, request, quiz_pk):
         if Quiz.objects.get(pk=quiz_pk).author == request.user.id:
             query_set = QuizQuestion.objects.filter(quiz__in=[Quiz.objects.get(pk=quiz_pk)])
-            return Response(self.serializer_class(query_set, many=True).data, status=status.HTTP_200_OK)
+            query_set =  self.paginate_queryset(query_set, request, view=self)
+            serialize_data = self.serializer_class(query_set, many=True).data
+            return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy pytań nieswojego quizu!"}, status=status.HTTP_401_UNAUTHORIZED)
 
 # zwraca wszystkie dostępne pytania     
-class AllQuestionViewSet(ModelViewSet):
+class AllQuestionViewSet(ModelViewSet, PageNumberPagination):
     queryset = QuizQuestion.objects.none()
     serializer_class = QuizQuestionSerializer
     permission_classes = (IsAuthenticated,)
@@ -288,10 +303,12 @@ class AllQuestionViewSet(ModelViewSet):
     
     def list(self, request):
         query_set = QuizQuestion.objects.filter(Q(author=request.user.id) | Q(public=True))
-        return Response(self.serializer_class(query_set, many=True).data, status=status.HTTP_200_OK)
+        query_set =  self.paginate_queryset(query_set, request, view=self)
+        serialize_data = self.serializer_class(query_set, many=True).data
+        return self.get_paginated_response(serialize_data)
 
-# zwraca wszystkie dostępne pytania     
-class PublicQuestionViewSet(ModelViewSet):
+# zwraca wszystkie publiczne pytania     
+class PublicQuestionViewSet(ModelViewSet, PageNumberPagination):
     queryset = QuizQuestion.objects.none()
     serializer_class = QuizQuestionSerializer
     permission_classes = (AllowAny,)
@@ -300,7 +317,9 @@ class PublicQuestionViewSet(ModelViewSet):
     
     def list(self, request):
         query_set = QuizQuestion.objects.filter(public=True)
-        return Response(self.serializer_class(query_set, many=True).data, status=status.HTTP_200_OK)
+        query_set =  self.paginate_queryset(query_set, request, view=self)
+        serialize_data = self.serializer_class(query_set, many=True).data
+        return self.get_paginated_response(serialize_data)
 
 # tworzenie/edycja/usuwanie odpowiedzi
 class AnswerView(ModelViewSet):
@@ -365,8 +384,8 @@ class AnswerView(ModelViewSet):
         answer.delete()
         return Response({"Success": f'Usunięto odpowiedź.'}, status=status.HTTP_200_OK)
 
-# zwraca wszystkie pytania quizie
-class AnswerViewSet(ModelViewSet):
+# zwraca wszystkie odpowiedzi danego pytania quizie
+class AnswerViewSet(ModelViewSet, PageNumberPagination):
     queryset = QuizAnswer.objects.none()
     serializer_class = QuizAnswerSerializer
     permission_classes = (IsAuthenticated,)
@@ -377,7 +396,9 @@ class AnswerViewSet(ModelViewSet):
         question = QuizQuestion.objects.get(pk=question_pk)
         if question.author == request.user.id:
             query_set = QuizAnswer.objects.filter(question=question)
-            return Response(self.serializer_class(query_set, many=True).data, status=status.HTTP_200_OK)
+            query_set =  self.paginate_queryset(query_set, request, view=self)
+            serialize_data = self.serializer_class(query_set, many=True).data
+            return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy odpowiedzi nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
@@ -405,21 +426,18 @@ def download_backup_csv(request, quiz_pk):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def download_backup_xml(request, quiz_pk):
     if request.method == 'GET':
         quiz = Quiz.objects.get(pk=quiz_pk)
-        # if not request.user.pk == quiz.author:
-        #     return Response({"To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
+        if not request.user.pk == quiz.author:
+            return Response({"To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
         questions = QuizQuestion.objects.filter(quiz=quiz)
         
         xml_quiz = ET.Element('quiz')
         for question in questions:
             xml_question = ET.SubElement(xml_quiz, 'question')
-            if question.answers_type == 'wielokrotny':
-                xml_question.set('type', 'multichoice')
-            elif question.answers_type == 'jednokrotny':
-                xml_question.set('type', 'shortanswer')
+            xml_question.set('type', 'multichoice')
             ET.SubElement(ET.SubElement(xml_question, 'name'), 'text').text = f'[Question{question.pk}] {question.text}'
             xml_question_text =  ET.SubElement(xml_question, 'questiontext')
             xml_question_text.set('format', "html")
