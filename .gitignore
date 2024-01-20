@@ -169,3 +169,4 @@ quizmaker/static/
 # databases
 data-auth/
 data-quiz/
+data-survey/

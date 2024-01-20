@@ -1,6 +1,5 @@
 from django.db import models
 import random
-from django.contrib.auth.models import User
 from django.urls import reverse
 
 # poniżej określono klasy na podstawie, których tworzone są odpowiednie tabele w bazie danych
@@ -33,9 +32,6 @@ class Quiz(models.Model):
         questions = list(self.questions.all())
         random.shuffle(questions)
         return questions[:self.number_of_questions]
-    
-    def get_absolute_url(self):
-        return reverse('quizzes:edit-menu')
 
     class Meta:
         verbose_name_plural = "Quizzes"

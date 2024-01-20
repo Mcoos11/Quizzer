@@ -4,7 +4,7 @@ from .models import Quiz, QuizQuestion, QuizAnswer, QuizFile
 class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
-        fields = ("pk", "name", "topic", "number_of_questions", "max_time", "score_to_pass", "difficulty", "author")
+        fields = ("pk", "name", "topic", "number_of_questions", "max_time", "score_to_pass", "difficulty", "author", "forum")
 
 class QuizQuestionSerializer(serializers.ModelSerializer):
     media = serializers.FileField(required=False)
