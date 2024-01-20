@@ -1,0 +1,76 @@
+
+.quiz {
+    text-align: center;
+    padding: 120px 20px;
+    max-width: 800px;
+}
+
+.quiz h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 30px 0;
+}
+
+.question-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+  
+.question-nav li {
+    display: inline-block;
+    user-select: none;
+    width: 40px; /* Set the circle's width */
+    height: 40px; /* Set the circle's height */
+    border-radius: 50%; /* Makes the shape a circle */
+    background-color: #b4b4b4; /* Change the background color as needed */
+    color: white;
+    font-size: 18px;
+    text-align: center;
+    line-height: 40px; /* Center the number vertically */
+    margin-right: 10px; /* Spacing between circles */
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.question-nav li:hover {
+    background-color: #3b3b3b;
+}
+
+.question-nav .active {
+    background-color: #3b3b3b;
+}
+
+.answers {
+    display:flex;
+    flex-direction: column;
+
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0; /* Optional: to align the list to the left */
+    width: 100%; /* Optional: to make the list full width */
+    background-color: #f1f1f1; /* Change background color as needed */
+    text-align: center; /* Optional: to center the items */
+    max-height: 50%;
+    
+    height: 40vh;
+}
+
+.answers li {
+    background-color: #3b3b3b; /* Background color for the list items */
+    color: white;
+    padding: 10px 20px; /* Adjust padding as needed */
+    margin: 10px; /* Spacing between items */
+    border-radius: 10px; /* Rounded corners */
+    text-align: center;
+    flex-grow: 1; /* Allows items to grow and fill available space */
+
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1; /* Allows items to grow and fill available space */
+    font-size: calc(0.6em + 1vh); /* Responsive font size based on viewport */
+}

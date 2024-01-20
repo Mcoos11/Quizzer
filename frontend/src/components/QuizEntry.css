@@ -1,0 +1,29 @@
+
+.quiz-entry-container {
+    position: relative;
+    padding: 10px;
+    height: 200px;
+    border-top: 1px solid #000;
+}
+
+.quiz-entry-name {
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.quiz-entry-description {
+    max-width: 1200px;
+    margin: 10px 0;
+}
+
+.quiz-entry-author {
+    position: absolute;
+    bottom: 10px;
+    font-weight: 600;
+}
+
+.quiz-entry-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
