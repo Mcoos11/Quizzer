@@ -23,6 +23,7 @@ import base64
 import xml.etree.ElementTree as ET
 import os, csv
 
+# nie używane
 class StandardPagination(PageNumberPagination):
     page_size = 1
     page_size_query_param = 'page_size'
@@ -64,18 +65,16 @@ class QuizView(ModelViewSet):
         return Response({"Success": f'Usunięto quiz.'}, status=status.HTTP_200_OK)
 
 # zwaraca wszystkie quizy danego użytkownika 
-class UserQuizViewSet(ModelViewSet, PageNumberPagination):
+class UserQuizViewSet(ModelViewSet):
     queryset = Quiz.objects.none()
     serializer_class = QuizSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
 
-    def list(self, request):
-        query_set = Quiz.objects.filter(author=request.user.id)
-        query_set =  self.paginate_queryset(query_set, request, view=self)
-        serialize_data = self.serializer_class(query_set, many=True).data
-        return self.get_paginated_response(serialize_data)
+    def get_queryset(self):
+        return Quiz.objects.filter(author=self.request.user.id)
     
 # zwaraca wszystkie quizy możliwe do wypęłnienia 
 class QuizViewSet(APIView, PageNumberPagination):
@@ -278,48 +277,51 @@ class QuestionDeleteAll(ModelViewSet):
     
 
 # zwraca wszystkie pytania quizie
-class QuestionViewSet(ModelViewSet, PageNumberPagination):
+class QuestionViewSet(ModelViewSet):
     queryset = QuizQuestion.objects.none()
     serializer_class = QuizQuestionSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self, quiz_pk):
+        return  QuizQuestion.objects.filter(quiz__in=[Quiz.objects.get(pk=quiz_pk)])
     
     def list(self, request, quiz_pk):
         if Quiz.objects.get(pk=quiz_pk).author == request.user.id:
-            query_set = QuizQuestion.objects.filter(quiz__in=[Quiz.objects.get(pk=quiz_pk)])
-            query_set =  self.paginate_queryset(query_set, request, view=self)
-            serialize_data = self.serializer_class(query_set, many=True).data
-            return self.get_paginated_response(serialize_data)
+            query_set = self.get_queryset(quiz_pk)
+            page = self.paginate_queryset(query_set)                                                                           
+            if page is not None:                                                                                              
+                serializer = self.get_serializer(page, many=True)                                                             
+                return self.get_paginated_response(serializer.data)                                                           
+            serializer = self.get_serializer(query_set, many=True)                                                             
+            return Response(serializer.data)
         return Response({"Fail": "Nie można wyświetlić listy pytań nieswojego quizu!"}, status=status.HTTP_401_UNAUTHORIZED)
 
 # zwraca wszystkie dostępne pytania     
-class AllQuestionViewSet(ModelViewSet, PageNumberPagination):
+class AllQuestionViewSet(ModelViewSet):
     queryset = QuizQuestion.objects.none()
     serializer_class = QuizQuestionSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
-    
-    def list(self, request):
-        query_set = QuizQuestion.objects.filter(Q(author=request.user.id) | Q(public=True))
-        query_set =  self.paginate_queryset(query_set, request, view=self)
-        serialize_data = self.serializer_class(query_set, many=True).data
-        return self.get_paginated_response(serialize_data)
+    pagination_class = PageNumberPagination
 
+    def get_queryset(self):
+        return QuizQuestion.objects.filter(Q(author=self.request.user.id) | Q(public=True))
+         
 # zwraca wszystkie publiczne pytania     
-class PublicQuestionViewSet(ModelViewSet, PageNumberPagination):
+class PublicQuestionViewSet(ModelViewSet,):
     queryset = QuizQuestion.objects.none()
     serializer_class = QuizQuestionSerializer
     permission_classes = (AllowAny,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
     
-    def list(self, request):
-        query_set = QuizQuestion.objects.filter(public=True)
-        query_set =  self.paginate_queryset(query_set, request, view=self)
-        serialize_data = self.serializer_class(query_set, many=True).data
-        return self.get_paginated_response(serialize_data)
+    def get_queryset(self):
+        return QuizQuestion.objects.filter(public=True)
 
 # tworzenie/edycja/usuwanie odpowiedzi
 class AnswerView(ModelViewSet):
@@ -385,18 +387,19 @@ class AnswerView(ModelViewSet):
         return Response({"Success": f'Usunięto odpowiedź.'}, status=status.HTTP_200_OK)
 
 # zwraca wszystkie odpowiedzi danego pytania quizie
-class AnswerViewSet(ModelViewSet, PageNumberPagination):
+class AnswerViewSet(ModelViewSet):
     queryset = QuizAnswer.objects.none()
     serializer_class = QuizAnswerSerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
     
     def list(self, request, question_pk):
         question = QuizQuestion.objects.get(pk=question_pk)
         if question.author == request.user.id:
             query_set = QuizAnswer.objects.filter(question=question)
-            query_set =  self.paginate_queryset(query_set, request, view=self)
+            query_set =  self.paginate_queryset(query_set)
             serialize_data = self.serializer_class(query_set, many=True).data
             return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy odpowiedzi nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)

@@ -58,16 +58,17 @@ class SurveyView(ModelViewSet):
         return Response({"Success": f'Usunięto ankietę.'}, status=status.HTTP_200_OK)
 
 # zwaraca wszystkie ankiety danego użytkownika 
-class UserSurveyViewSet(ModelViewSet, PageNumberPagination):
+class UserSurveyViewSet(ModelViewSet):
     queryset = Survey.objects.none()
     serializer_class = SurveySerializer
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
 
     def list(self, request):
         query_set = Survey.objects.filter(author=request.user.id)
-        query_set =  self.paginate_queryset(query_set, request, view=self)
+        query_set =  self.paginate_queryset(query_set)
         serialize_data = self.serializer_class(query_set, many=True).data
         return self.get_paginated_response(serialize_data)
     
@@ -280,11 +281,12 @@ class QuestionViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
     
     def list(self, request, survey_pk):
         if Survey.objects.get(pk=survey_pk).author == request.user.id:
             query_set = SurveyQuestion.objects.filter(survey__in=[Survey.objects.get(pk=survey_pk)])
-            query_set =  self.paginate_queryset(query_set, request, view=self)
+            query_set =  self.paginate_queryset(query_set)
             serialize_data = self.serializer_class(query_set, many=True).data
             return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy pytań nieswojej ankiety!"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -359,12 +361,13 @@ class AnswerViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     http_method_names = ['get', ]
+    pagination_class = PageNumberPagination
     
     def list(self, request, question_pk):
         question = SurveyQuestion.objects.get(pk=question_pk)
         if question.author == request.user.id:
             query_set = SurveyAnswer.objects.filter(question=question)
-            query_set =  self.paginate_queryset(query_set, request, view=self)
+            query_set =  self.paginate_queryset(query_set)
             serialize_data = self.serializer_class(query_set, many=True).data
             return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy odpowiedzi nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
