@@ -170,3 +170,8 @@ quizmaker/static/
 data-auth/
 data-quiz/
 data-survey/
+data-course/
+
+courses/data
+
+.idea
