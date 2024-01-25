@@ -1,6 +1,5 @@
-import { applyMiddleware } from "redux";
-import { legacy_createStore as createStore } from 'redux';
-// import { composeWithDevTools } from 'redux-devtools-extension';
+import { applyMiddleware, compose } from "redux";
+import { createStore } from 'redux';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
@@ -8,13 +7,11 @@ const initialState = {};
 
 const middleware = [thunk];
 
-const middlewareEnhancer = applyMiddleware(...middleware);
 
 const store = createStore(
     rootReducer,
     initialState,
-    middlewareEnhancer
-    // composeWithDevTools(applyMiddleware(...middleware)),
+    compose(applyMiddleware(...middleware),)
 );
 
 export default store;

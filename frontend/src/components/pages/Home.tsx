@@ -11,7 +11,7 @@ import Author_4 from '../../../img/author_4.jpg'
 import { connect } from 'react-redux';
 import { checkAuthenticated } from '../../actions/auth';
 
-function Home({ isAuthenticated }: any) {
+function Home() {
     return (
         <>
             <section className="hero">
@@ -78,8 +78,5 @@ range of quizzes and educational resources, and engage with our vibrant communit
         </>
     )
 }
-const mapStateToProps = (state: any) => ({
-    isAuthenticated: state.auth.isAuthenticated,
-});
 
-export default connect(mapStateToProps, { checkAuthenticated })(Home);
+export default Home;

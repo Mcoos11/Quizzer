@@ -102,7 +102,6 @@
 }
 
 .video-container {
-    min-height: 500px;
     text-align: center;
     background-color: rgb(37, 37, 37);
     width: 100%;
@@ -112,14 +111,14 @@
 }
 
 .video-outer {
-    width: 640px;
+    max-width: 640px;
     border-radius: 20px;
     overflow: hidden;
     border-radius: 20px;
 }
 
 .video-container video {
-    max-height: 460px;
+    width: 100%;
     display: block;
 }
 

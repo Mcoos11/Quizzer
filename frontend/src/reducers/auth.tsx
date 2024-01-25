@@ -16,71 +16,88 @@ import {
     ACTIVATION_SUCCESS
 } from '../actions/types';
 
-const initialState = {
-    access: localStorage.getItem('access'),
-    refresh: localStorage.getItem('refresh'),
-    isAuthenticated: null,
-    user: null,
-};
+const initialState = localStorage.getItem("auth") != null ? JSON.parse(localStorage.getItem("auth")): {};
+let new_state: any;
 
 export default function(state = initialState, action: any) {
     const { type, payload } = action;
     switch(type){
         case LOGIN_SUCCESS:
             localStorage.setItem('access', payload.access);
-            return {
+
+            new_state = {
                 ...state,
                 isAuthenticated: true,
                 access: payload.access,
                 refresh: payload.refresh
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
         case SIGNUP_FAIL:
         case LOGIN_FAIL:
         case LOGOUT:
             localStorage.removeItem('access');
             localStorage.removeItem('refresh');
-            return {
+            new_state = {
                 ...state,
                 isAuthenticated: false,
                 access: null,
                 refresh: null,
                 user: null
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
         case LOAD_USER_SUCCESS:
-            return {
+            new_state = {
                 ...state,
                 user: payload
             }
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
         case LOAD_USER_FAIL:
-            return {
+            new_state = {
                 ...state,
                 user: null
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
         case AUTHENTICATED_SUCCESS:
-            return {
+            new_state = {
                 ...state,
                 isAuthenticated: true,
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
         case AUTHENTICATED_FAIL:
-            return {
+            new_state = {
                 ...state,
                 isAuthenticated: false,
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state
         case SIGNUP_SUCCESS:
-            return {
+            new_state = {
                 ...state,
                 isAuthenticated: false
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state
         case PASSWORD_RESET_CONFIRM_FAIL:
         case PASSWORD_RESET_CONFIRM_SUCCESS:
         case PASSWORD_RESET_FAIL:
         case PASSWORD_RESET_SUCCESS:
         case ACTIVATION_FAIL:
         case ACTIVATION_SUCCESS:
-            return {
+            new_state = {
                 ...state,
-            }
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
         default:
-            return state
+            new_state = {
+                ...state,
+            };
+            localStorage.setItem("auth", JSON.stringify(new_state));
+            return new_state;
     }
 };

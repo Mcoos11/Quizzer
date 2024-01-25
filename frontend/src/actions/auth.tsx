@@ -108,3 +108,10 @@ export const login = (email: string, password: string): any => async (dispatch: 
         });
     }
 };
+
+export const logout = () => (dispatch: any) => {
+    console.log("Logout")
+    dispatch({
+        type: LOGOUT
+    });
+};
