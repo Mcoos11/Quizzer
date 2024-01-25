@@ -1,7 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
-from .views import CourseViewSet
+from .views import CourseViewSet, FileViewSet
 
 urlpatterns = [
     path('courses', CourseViewSet.as_view({
@@ -12,5 +11,9 @@ urlpatterns = [
         'get': 'retrieve',
         'put': 'update',
         'delete': 'destroy'
+    })),
+    path('courses/<int:pk>/upload_file', FileViewSet.as_view({
+        'get': 'retrieve',
+        'post': 'create'
     }))
 ]
