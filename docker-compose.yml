@@ -21,9 +21,6 @@ services:
         read_only: true
     depends_on:
       - frontend
-      - web-auth
-      - web-quiz-editor
-      - web-survey-editor
 
   db-auth:
     image: postgres

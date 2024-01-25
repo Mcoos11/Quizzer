@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { login } from '../../actions/auth';
 
 
-function Login({ login, isAuthenticated}: any) {
+function Login( {login, isAuthenticated}: any) {
     
     const [formData, setFormData] = useState({
         email: '',
@@ -23,6 +23,7 @@ function Login({ login, isAuthenticated}: any) {
         login(email, password);
     }
 
+    console.log(isAuthenticated)
     if(isAuthenticated){
         return <Navigate to='/' />;
     }
@@ -52,4 +53,4 @@ const mapStateToProps = (state: any) => ({
 });
 
 export default connect(mapStateToProps, { login })(Login);
-//export default Login;
+// export default Login;

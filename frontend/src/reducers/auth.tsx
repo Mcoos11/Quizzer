@@ -23,7 +23,7 @@ const initialState = {
     user: null,
 };
 
-export default function(state = initialState, action) {
+export default function(state = initialState, action: any) {
     const { type, payload } = action;
     switch(type){
         case LOGIN_SUCCESS:

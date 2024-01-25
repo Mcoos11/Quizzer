@@ -8,7 +8,10 @@ import Author_2 from '../../../img/author_2.jpg'
 import Author_3 from '../../../img/author_3.jpg'
 import Author_4 from '../../../img/author_4.jpg'
 
-function Home() {
+import { connect } from 'react-redux';
+import { checkAuthenticated } from '../../actions/auth';
+
+function Home({ isAuthenticated }: any) {
     return (
         <>
             <section className="hero">
@@ -75,5 +78,8 @@ range of quizzes and educational resources, and engage with our vibrant communit
         </>
     )
 }
+const mapStateToProps = (state: any) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+});
 
-export default Home;
+export default connect(mapStateToProps, { checkAuthenticated })(Home);
