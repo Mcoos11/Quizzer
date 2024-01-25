@@ -16,7 +16,7 @@ import {
     ACTIVATION_SUCCESS
 } from '../actions/types';
 
-const initialState = localStorage.getItem("auth") != null ? JSON.parse(localStorage.getItem("auth")): {};
+const initialState = localStorage.getItem("auth") != null ? JSON.parse(String(localStorage.getItem("auth"))): {};
 let new_state: any;
 
 export default function(state = initialState, action: any) {
