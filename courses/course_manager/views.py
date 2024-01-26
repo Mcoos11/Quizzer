@@ -38,12 +38,11 @@ class CourseViewSet(viewsets.ViewSet):
 
 
 class FileViewSet(viewsets.ViewSet):
-    lookup_field = "pk"
-    def create(self, request, pk=None):
+    def create(self, request, pk, class_pk):
         serializer = FileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"Success:" "Dodano plik"}, status=status.HTTP_201_CREATED)
+            return Response({"Success:" f"Dodano plik {class_pk}"}, status=status.HTTP_201_CREATED)
         else:
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

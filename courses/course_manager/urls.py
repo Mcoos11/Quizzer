@@ -12,8 +12,10 @@ urlpatterns = [
         'put': 'update',
         'delete': 'destroy'
     })),
-    path('courses/<int:pk>/upload_file', FileViewSet.as_view({
-        'get': 'retrieve',
+    path('courses/<int:pk>/c<int:class_pk>/upload_file', FileViewSet.as_view({
         'post': 'create'
+    })),
+    path('courses/<int:pk>/download_file', FileViewSet.as_view({
+        'get': 'retrieve'
     }))
 ]
