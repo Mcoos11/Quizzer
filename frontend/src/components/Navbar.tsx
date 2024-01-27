@@ -32,6 +32,7 @@ function Navbar({ logout, isAuthenticated }: any) {
                     <li><a href="/Home">O nas</a></li>
                     <li><a href="/Courses">Kursy</a></li>
                     <li><a href="/Quizzes">Quizy</a></li>
+                    <li><a href="/QuestionGenerator">Generowanie pytań</a></li>
                 </ul>
             </nav>
             <div className="login-container">

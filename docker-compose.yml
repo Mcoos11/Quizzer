@@ -90,6 +90,16 @@ services:
     depends_on:
       - db-survey
 
+  web-question-generator:
+    build: 
+      context: ./question_generator
+    command: bash initialize.sh
+    volumes:
+      - ./question_generator:/code
+      - media_root:/mediafiles
+    ports:
+      - "8010:8000"
+
 volumes:
   react_build:
   media_root:

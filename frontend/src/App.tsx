@@ -7,6 +7,7 @@ import Quizzes from './components/pages/Quizzes'
 import Registration from './components/pages/Registration'
 import Courses from './components/pages/Courses'
 import Quiz from './components/pages/Quiz'
+import QuestionGenerator from './components/pages/QuestionGenerator'
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/Quizzes" element={<Quizzes />} />
             <Route path="/Quiz" element={<Quiz />} />
             <Route path="/Courses" element={<Courses />} />
+            <Route path="/QuestionGenerator" element={<QuestionGenerator />} />
           </Routes>
         </BrowserRouter>
       </Provider>

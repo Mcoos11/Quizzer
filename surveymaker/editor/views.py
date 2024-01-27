@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view, permission_classes
 from django.http.response import HttpResponse
-from surveymaker.settings import MEDIA_ROOT
+from surveymaker.settings import MEDIA_ROOT, ACCESS_KEY
 from bs4 import BeautifulSoup
 from io import BytesIO
 from PIL import Image
@@ -291,6 +291,16 @@ class QuestionViewSet(ModelViewSet):
             return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy pytań nieswojej ankiety!"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def survey_question_set(request, survey_pk, pass_key=None):
+    quiz = Survey.objects.get(pk=survey_pk)
+    if ACCESS_KEY == pass_key:
+        query_set = SurveyQuestion.objects.filter(quiz=quiz)
+        serialize_data = SurveyQuestionSerializer(query_set, many=True).data
+        return Response(serialize_data, status=status.HTTP_200_OK)
+    return Response({"Fail": "Błędny klucz dostępu!"}, status=status.HTTP_401_UNAUTHORIZED)
+
 # tworzenie/edycja/usuwanie odpowiedzi
 class AnswerView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
@@ -371,6 +381,16 @@ class AnswerViewSet(ModelViewSet):
             serialize_data = self.serializer_class(query_set, many=True).data
             return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy odpowiedzi nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def survey_answer_set(request, question_pk, pass_key=None):
+    question = SurveyQuestion.objects.get(pk=question_pk)
+    if ACCESS_KEY == pass_key:
+        query_set = SurveyAnswer.objects.filter(question=question)
+        serialize_data = SurveyAnswerSerializer(query_set, many=True).data
+        return Response(serialize_data, status=status.HTTP_200_OK)
+    return Response({"Fail": "Błędny klucz dostępu!"}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
