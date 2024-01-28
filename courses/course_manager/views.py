@@ -1,12 +1,16 @@
 from django.http import HttpResponse, JsonResponse
 from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
 
-from .models import Course, Files
-from .serializers import CourseSerializer, FileSerializer
+from .models import Course, Files, Class
+from .serializers import CourseSerializer, FileSerializer, ClassSerializer
 
 
 class CourseViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTTokenUserAuthentication,)
 
     def list(self, request):
         courses = Course.objects.all()
@@ -14,9 +18,7 @@ class CourseViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        # TODO: check when login fixed
-        # user_id = self.request.user.id
-        user_id = 1
+        user_id = self.request.user.id
         data = request.data
         data['owner'] = user_id
         serializer = CourseSerializer(data=data)
@@ -27,9 +29,7 @@ class CourseViewSet(viewsets.ViewSet):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
-        # TODO: check when login fixed
-        # user_id = self.request.user.id
-        user_id = 1
+        user_id = self.request.user.id
         data = request.data
         data['owner'] = user_id
         course = Course.objects.get(id=pk)
@@ -44,9 +44,7 @@ class CourseViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, request, pk=None):
-        # TODO: check when login fixed
-        # user_id = self.request.user.id
-        user_id = 1
+        user_id = self.request.user.id
         data = request.data
         data['owner'] = user_id
         course = Course.objects.get(id=pk)
@@ -57,9 +55,7 @@ class CourseViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, pk=None):
-        # TODO: check when login fixed
-        # user_id = self.request.user.id
-        user_id = 2
+        user_id = self.request.user.id
         course = Course.objects.get(id=pk)
         if user_id == course.owner:
             serializer = CourseSerializer(instance=course)
@@ -73,9 +69,7 @@ class CourseViewSet(viewsets.ViewSet):
         return Response({"Fail:" "User not an owner or participant"}, status=status.HTTP_401_UNAUTHORIZED)
 
     def add_user(self, request, pk=None):
-        # TODO: check when login fixed
-        # user_id = self.request.user.id
-        user_id = 3
+        user_id = self.request.user.id
         course = Course.objects.get(id=pk)
         if course.participants:
             if user_id not in course.participants:
@@ -92,15 +86,20 @@ class CourseViewSet(viewsets.ViewSet):
 
 class FileViewSet(viewsets.ViewSet):
     def create(self, request, pk, class_pk):
-        data= request.data
-        data['k_course_id']= pk
-        data['k_class_id']= class_pk
-        serializer = FileSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"Success:" f"Dodano plik {class_pk}"}, status=status.HTTP_201_CREATED)
+        data = request.data
+        data['k_course'] = pk
+        data['k_class'] = class_pk
+        print(data)
+        class_obj = Class.objects.get(pk=class_pk)
+        if class_obj.k_course_id != pk:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer = FileSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"Success:" f"Dodano plik do klasy {class_pk}"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         file = Files.objects.get(pk=pk)
@@ -111,10 +110,53 @@ class FileViewSet(viewsets.ViewSet):
         return response
 
     def list(self, request, pk=None):
-        files = Files.objects.filter(class_id=pk)
+        files = Files.objects.filter(k_course_id=pk)
         serializer = FileSerializer(files, many=True)
         return Response(serializer.data)
 
+    # TODO: deleting files
+
+
 class ClassViewSet(viewsets.ViewSet):
-    def create(self, request, course_pk):
-        pass
+    def add_class(self, request, pk, class_pk):
+        user_id = self.request.user.id
+        course = Course.objects.get(id=pk)
+        if course.owner != user_id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            data=request.data
+            data['k_course']= pk
+            serializer = ClassSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete_class(self, request, pk, class_pk):
+        user_id = self.request.user.id
+        course = Course.objects.get(id=pk)
+        if course.owner != user_id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            class_obj = Class.objects.get(id=class_pk)
+            class_obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    def update_class(self, request, pk, class_pk):
+        user_id = self.request.user.id
+        course = Course.objects.get(id=pk)
+        if course.owner != user_id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            data = request.data
+            data['k_course'] = course.pk
+            class_obj = Class.objects.get(pk=class_pk)
+            serializer = ClassSerializer(instance=class_obj, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
