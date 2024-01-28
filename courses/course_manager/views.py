@@ -14,10 +14,14 @@ class CourseViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        user_id = self.request.user.id
+        request.data['user_id'] = user_id
         serializer = CourseSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         course = Course.objects.get(id=pk)
