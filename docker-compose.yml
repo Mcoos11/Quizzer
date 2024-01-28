@@ -24,6 +24,7 @@ services:
       - web-auth
       - web-quiz-editor
       - web-survey-editor
+      - courses
 
   db-auth:
     image: postgres
@@ -103,19 +104,6 @@ services:
     ports:
       - "8010:8000"
 
-  courses:
-    build:
-      context: ./courses
-      dockerfile: Dockerfile
-    ports:
-      - "8003:8000"
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./courses:/code
-    depends_on:
-      - db-courses
-
-
   db-courses:
     image: postgres
     volumes:
@@ -127,6 +115,16 @@ services:
     ports:
       - "8432:5432"
 
+  courses:
+    build:
+      context: ./courses
+    ports:
+      - "8003:8000"
+    command: bash initialize.sh
+    volumes:
+      - ./courses:/code
+    depends_on:
+      - db-courses
 
 volumes:
   react_build:
