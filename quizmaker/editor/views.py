@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view, permission_classes
 from django.http.response import HttpResponse
-from quizmaker.settings import MEDIA_ROOT
+from quizmaker.settings import MEDIA_ROOT, ACCESS_KEY
 from bs4 import BeautifulSoup
 from io import BytesIO
 from PIL import Image
@@ -22,6 +22,7 @@ from PIL import Image
 import base64
 import xml.etree.ElementTree as ET
 import os, csv
+
 
 # nie używane
 class StandardPagination(PageNumberPagination):
@@ -299,6 +300,16 @@ class QuestionViewSet(ModelViewSet):
             return Response(serializer.data)
         return Response({"Fail": "Nie można wyświetlić listy pytań nieswojego quizu!"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def quiz_question_set(request, quiz_pk, pass_key=None):
+    quiz = Quiz.objects.get(pk=quiz_pk)
+    if ACCESS_KEY == pass_key:
+        query_set = QuizQuestion.objects.filter(quiz=quiz)
+        serialize_data = QuizQuestionSerializer(query_set, many=True).data
+        return Response(serialize_data, status=status.HTTP_200_OK)
+    return Response({"Fail": "Błędny klucz dostępu!"}, status=status.HTTP_401_UNAUTHORIZED)
+
 # zwraca wszystkie dostępne pytania     
 class AllQuestionViewSet(ModelViewSet):
     queryset = QuizQuestion.objects.none()
@@ -403,6 +414,16 @@ class AnswerViewSet(ModelViewSet):
             serialize_data = self.serializer_class(query_set, many=True).data
             return self.get_paginated_response(serialize_data)
         return Response({"Fail": "Nie można wyświetlić listy odpowiedzi nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def quiz_answer_set(request, question_pk, pass_key=None):
+    question = QuizQuestion.objects.get(pk=question_pk)
+    if ACCESS_KEY == pass_key:
+        query_set = QuizAnswer.objects.filter(question=question)
+        serialize_data = QuizAnswerSerializer(query_set, many=True).data
+        return Response(serialize_data, status=status.HTTP_200_OK)
+    return Response({"Fail": "Błędny klucz dostępu!"}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -22,6 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-k%)m03e_i)(2i!&2**k+nwo+mbq3i_rpspxg5qf_e+6_u**enp"
+ACCESS_KEY = "4XTx+_jU_w7+xYS)"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -163,3 +164,5 @@ MEDIA_URL = 'quiz_editor/mediafiles/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+

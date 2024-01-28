@@ -8,6 +8,9 @@ import Author_2 from '../../../img/author_2.jpg'
 import Author_3 from '../../../img/author_3.jpg'
 import Author_4 from '../../../img/author_4.jpg'
 
+import { connect } from 'react-redux';
+import { checkAuthenticated } from '../../actions/auth';
+
 function Home() {
     return (
         <>

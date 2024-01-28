@@ -2,7 +2,26 @@ import './Navbar.css'
 import Button from './Button.tsx'
 import logo from '../../img/logo.png'
 
-function Navbar() {
+import React, { Fragment } from 'react';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+
+import { logout } from '../actions/auth';
+import store from '../store'
+
+function Navbar({ logout, isAuthenticated }: any) {
+    const guestLinks = () => (
+        <Fragment>
+            <Button className="secondary" link="/Registration">Zarejestruj się</Button>
+            <Button className="primary" link="/Login">Zaloguj</Button>
+        </Fragment>
+    );
+
+    const authLinks = () => (
+        <Fragment>
+            <Button className="primary" onClick={logout}>Wyloguj</Button>
+        </Fragment>
+    );
     return ( 
         <header className="navbar">
             <h3 className="logo">
@@ -13,14 +32,18 @@ function Navbar() {
                     <li><a href="/Home">O nas</a></li>
                     <li><a href="/Courses">Kursy</a></li>
                     <li><a href="/Quizzes">Quizy</a></li>
+                    <li><a href="/QuestionGenerator">Generowanie pytań</a></li>
                 </ul>
             </nav>
             <div className="login-container">
-                <Button className="secondary" link="/Registration">Zarejestruj się</Button>
-                <Button className="primary" link="/Login">Zaloguj</Button>
+                {isAuthenticated ? authLinks() : guestLinks()}
             </div>
         </header>
      );
 }
 
-export default Navbar;
+const mapStateToProps = () => ({
+    isAuthenticated: store.getState().auth.isAuthenticated,
+});
+
+export default connect(mapStateToProps, { logout })(Navbar);

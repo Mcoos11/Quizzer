@@ -7,9 +7,10 @@ import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { login } from '../../actions/auth';
+import store from '../../store'
 
 
-function Login({ login, isAuthenticated}: any) {
+function Login( {login, isAuthenticated}: any) {
     
     const [formData, setFormData] = useState({
         email: '',
@@ -47,9 +48,8 @@ function Login({ login, isAuthenticated}: any) {
 }
 
 
-const mapStateToProps = (state: any) => ({
-    isAuthenticated: state.auth.isAuthenticated,
+const mapStateToProps = () => ({
+    isAuthenticated: store.getState().auth.isAuthenticated,
 });
 
 export default connect(mapStateToProps, { login })(Login);
-//export default Login;
