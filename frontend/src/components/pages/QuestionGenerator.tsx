@@ -6,7 +6,7 @@ import Select from 'react-select'
 
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { generate } from '../../actions/generator.tsx';
+// import { generate } from '../../actions/generator.tsx';
 import store from '../../store'
 
 
