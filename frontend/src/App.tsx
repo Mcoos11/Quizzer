@@ -11,6 +11,8 @@ import QuestionGenerator from './components/pages/QuestionGenerator'
 
 import { Provider } from 'react-redux';
 import store from './store';
+import CreateQuiz from './components/pages/CreateQuiz'
+import Profile from './components/pages/Profile'
 
 function App() {
   
@@ -24,8 +26,10 @@ function App() {
             <Route index element={<Home />} />
             <Route path="/Home" element={<Home />} />
             <Route path="/Login" element={<Login />} />
+            <Route path="/Profile" element={<Profile />} />
             <Route path="/Registration" element={<Registration />} />
             <Route path="/Quizzes" element={<Quizzes />} />
+            <Route path="/Create-Quiz" element={<CreateQuiz />} />
             <Route path="/Quiz" element={<Quiz />} />
             <Route path="/Courses" element={<Courses />} />
             <Route path="/QuestionGenerator" element={<QuestionGenerator />} />

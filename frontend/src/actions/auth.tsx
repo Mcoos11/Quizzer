@@ -66,7 +66,7 @@ export const load_user = () => async (dispatch: any) => {
 
         try {
             const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/auth/users/me/`, config);
-    
+            
             dispatch({
                 type: LOAD_USER_SUCCESS,
                 payload: res.data

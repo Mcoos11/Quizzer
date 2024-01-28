@@ -1,3 +1,4 @@
+import Button from '../Button';
 import QuizEntry from '../QuizEntry'
 import './Quizzes.css'
 
@@ -27,6 +28,9 @@ function Quizzes() {
                         {/* <TextInput></TextInput> */}
                     </div>
                 </form>
+                <div className="button-panel">
+                    <Button className="primary" link="/Create-Quiz">Stwórz Quiz</Button>
+                </div>
             </div>
 
             <QuizEntry name="Matematyka" description={desc} author="Jan Kowalski"></QuizEntry>

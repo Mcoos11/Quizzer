@@ -35,9 +35,19 @@
     font-weight: 600;
 }
 
+.filter-bar {
+    display: flex;
+}
+
 .filter-bar form {
     display: block;
+    margin-left: 0px;
     justify-content: space-between;
+}
+
+.filter-bar .button-panel {
+    margin-right: 0;
+    padding: 10px;
 }
 
 .dropdown {

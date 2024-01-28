@@ -7,21 +7,27 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { logout } from '../actions/auth';
+import { load_user } from '../actions/auth';
 import store from '../store'
 
-function Navbar({ logout, isAuthenticated }: any) {
-    const guestLinks = () => (
+function Navbar({ load_user, logout, isAuthenticated }: any) {
+
+    load_user();
+    const guestLinks = () => {return (
         <Fragment>
             <Button className="secondary" link="/Registration">Zarejestruj się</Button>
             <Button className="primary" link="/Login">Zaloguj</Button>
         </Fragment>
-    );
+    )};
 
-    const authLinks = () => (
-        <Fragment>
+    const authLinks = () => { return (
+        <div className="profile-container">
             <Button className="primary" onClick={logout}>Wyloguj</Button>
-        </Fragment>
-    );
+            <a href="/Profile" className="user-name">{String(store.getState()?.auth?.user?.first_name) + " " + String(store.getState()?.auth?.user?.last_name)}</a>
+        </div>
+    )};
+
+
     return ( 
         <header className="navbar">
             <h3 className="logo">
@@ -46,4 +52,4 @@ const mapStateToProps = () => ({
     isAuthenticated: store.getState().auth.isAuthenticated,
 });
 
-export default connect(mapStateToProps, { logout })(Navbar);
+export default connect(mapStateToProps, { load_user, logout })(Navbar);

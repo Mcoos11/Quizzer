@@ -18,7 +18,7 @@ function Home() {
                 <h1>Twórz, rozwiązuj i ucz się z Quizzer</h1>
                 <div className="description">Welcome to our platform, the ultimate learning hub for teachers and students. Explore a wide 
 range of quizzes and educational resources, and engage with our vibrant community</div>
-                <Button className="secondary">Dowiedz się więcej</Button>
+                <Button className="secondary" onClick={() => {document.getElementsByClassName("about-us")[0].scrollIntoView({ behavior: 'smooth' });}}>Dowiedz się więcej</Button>
             </section>
             <section className="parallax-section-home"></section>
 

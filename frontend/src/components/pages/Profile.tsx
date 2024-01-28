@@ -1,0 +1,79 @@
+import Button from '../Button';
+import QuizEntry from '../QuizEntry';
+import TextInput from '../TextInput';
+import './Profile.css';
+import React, { useEffect, useState } from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import { get_user_quiz_set } from '../../actions/quiz_editor';
+import { connect, useDispatch, useSelector } from 'react-redux';
+import store from '../../store';
+import default_avatar from '../../../img/default_avatar.png';
+
+function Profile( {isAuthenticated}: any) {
+
+    if(!isAuthenticated){
+        return <Navigate to='/Login' />;
+    }
+
+    // const dispatch = useDispatch();
+    // const data = useSelector((state: any) => state.data);
+  
+    // useEffect(() => {
+    //     dispatch(get_user_quiz_set());
+    //     userQuizSet();
+    // }, []);
+
+    const [quizzesList, setQuizzesList] = useState({
+        results: [{
+            name: "",
+            topic: ""
+        }]
+    });
+    
+    // setQuizzesList(get_user_quiz_set());
+
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            // Assume fetchDataFunction is a predefined function that returns a promise
+            const result = await get_user_quiz_set();
+            console.log(result);
+            // Set the state when the data is loaded
+            setQuizzesList(result);
+          } catch (error) {
+            console.error("get_user_quiz_set() couldn't be fetched");
+          }
+        };
+    
+        // Call the fetchData function when the component mounts
+        fetchData();
+      }, []);
+
+    const userName = String(store.getState()?.auth?.user?.first_name) + " " + String(store.getState()?.auth?.user?.last_name);
+
+    return (
+        <>
+        <section className="profile">
+            <img className="profile-picture" src={default_avatar}></img>
+            <span className="user-name">{userName}</span>
+            <span className="user-email">{String(store.getState()?.auth?.user?.email)}</span>
+        </section>
+        <section className="user-quizzes">
+            <h1>Twoje quizy</h1>
+            {quizzesList.results.map((item, id) => (
+                <QuizEntry key={id} name={item.name} description={item.topic} author={userName}></QuizEntry>
+            ))}
+        </section>
+        </>
+    )
+}
+
+const mapStateToProps = () => ({
+    isAuthenticated: store.getState().auth.isAuthenticated,
+});
+
+// const mapDispatchtoprops = (dispatch: any) => ({
+//     userQuizSet: ()=>dispatch(get_user_quiz_set())
+// });
+
+export default connect(mapStateToProps)(Profile);
