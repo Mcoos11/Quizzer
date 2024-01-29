@@ -165,4 +165,4 @@ MEDIA_URL = 'quiz_editor/mediafiles/'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
+AUTH_DOMAIN = 'http://localhost/auth'
