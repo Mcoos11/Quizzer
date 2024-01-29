@@ -4,7 +4,7 @@ import TextInput from '../TextInput';
 import './Profile.css';
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { get_user_quiz_set } from '../../actions/quiz_editor';
+import { delete_quiz, get_user_quiz_set } from '../../actions/quiz_editor';
 import { connect, useDispatch, useSelector } from 'react-redux';
 import store from '../../store';
 import default_avatar from '../../../img/default_avatar.png';
@@ -26,7 +26,8 @@ function Profile( {isAuthenticated}: any) {
     const [quizzesList, setQuizzesList] = useState({
         results: [{
             name: "",
-            topic: ""
+            topic: "",
+            pk: 0
         }]
     });
     
@@ -49,6 +50,19 @@ function Profile( {isAuthenticated}: any) {
         fetchData();
       }, []);
 
+    const deleteQuiz = async (quizName: string, pk: number) => {
+        if(confirm("Czy na pewno chcesz usunąć quiz: " + quizName)) {
+            try {
+                await delete_quiz(pk);
+            } catch (error) {
+                console.error("quiz couldn't be deleted");
+            }
+        } else {
+            return;
+        }
+    }
+
+
     const userName = String(store.getState()?.auth?.user?.first_name) + " " + String(store.getState()?.auth?.user?.last_name);
 
     return (
@@ -61,7 +75,9 @@ function Profile( {isAuthenticated}: any) {
         <section className="user-quizzes">
             <h1>Twoje quizy</h1>
             {quizzesList.results.map((item, id) => (
-                <QuizEntry key={id} name={item.name} description={item.topic} author={userName}></QuizEntry>
+                <QuizEntry key={id} name={item.name} description={item.topic} author={userName}>
+                    <Button className="secondary delete-button" onClick={() => deleteQuiz(item.name, item.pk)}>Usuń</Button>
+                </QuizEntry>
             ))}
         </section>
         </>

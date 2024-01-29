@@ -10,6 +10,7 @@ function QuizEntry(props : any) {
                 <div className="quiz-entry-description">{props.description}</div>
                 <div className="quiz-entry-author">Autor: {props.author}</div>
                 <Button className="primary quiz-entry-button">Rozwiąż</Button>
+                {props.children}
             </div>
         </>
      );
