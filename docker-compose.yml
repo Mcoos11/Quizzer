@@ -90,6 +90,18 @@ services:
     depends_on:
       - db-survey
 
+  web-quiz-solver:
+    build:
+      context: ./quizsolver
+    command: bash initialize.sh
+    volumes:
+      - ./quizsolver:/code
+      - media_root:/mediafiles
+    ports:
+      - "8003:8000"
+    depends_on:
+      - db-quiz
+
   web-question-generator:
     build: 
       context: ./question_generator
