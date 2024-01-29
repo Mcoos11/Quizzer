@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db-courses:
+    image: postgres:16.1
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+     - "5432:5432"
+  web-courses:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    depends_on:
+      - db-courses
+#  db-auth:
+#    image: postgres
+#    volumes:
+#      - ./data-auth/db:/var/lib/postgresql/data
+#    environment:
+#      - POSTGRES_DB=postgres
+#      - POSTGRES_USER=root
+#      - POSTGRES_PASSWORD=root
+#    ports:
+#     - "6432:5432"
+#  web-auth:
+#    build: auth
+#    command: python manage.py runserver 0.0.0.0:8000
+#    volumes:
+#      - ./auth:/code
+#    ports:
+#      - "8001:8000"
+#    depends_on:
+#      - db-auth

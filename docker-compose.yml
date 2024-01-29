@@ -21,6 +21,10 @@ services:
         read_only: true
     depends_on:
       - frontend
+      - web-auth
+      - web-quiz-editor
+      - web-survey-editor
+      - courses
 
   db-auth:
     image: postgres
@@ -98,7 +102,7 @@ services:
       - ./quizsolver:/code
       - media_root:/mediafiles
     ports:
-      - "8003:8000"
+      - "8004:8000"
     depends_on:
       - db-quiz
 
@@ -111,6 +115,28 @@ services:
       - media_root:/mediafiles
     ports:
       - "8010:8000"
+
+  db-courses:
+    image: postgres
+    volumes:
+      - ./data-course:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "8432:5432"
+
+  courses:
+    build:
+      context: ./courses
+    ports:
+      - "8003:8000"
+    command: bash initialize.sh
+    volumes:
+      - ./courses:/code
+    depends_on:
+      - db-courses
 
 volumes:
   react_build:
