@@ -14,14 +14,14 @@ from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view, permission_classes
 from django.http.response import HttpResponse
-from quizmaker.settings import MEDIA_ROOT, ACCESS_KEY
+from quizmaker.settings import MEDIA_ROOT, ACCESS_KEY, AUTH_DOMAIN
 from bs4 import BeautifulSoup
 from io import BytesIO
 from PIL import Image
 
 import base64
 import xml.etree.ElementTree as ET
-import os, csv
+import os, csv, requests
 
 
 # nie używane
@@ -29,6 +29,32 @@ class StandardPagination(PageNumberPagination):
     page_size = 1
     page_size_query_param = 'page_size'
     page_query_param = 'page'
+    
+# nie używane
+class QuizSetPagination(PageNumberPagination):
+    page_size = 10
+    
+    def get_paginated_response(self, data):
+        users_pks = []
+        for el in data:
+            if not el['author'] in users_pks:
+                users_pks.append(el['author'])
+        
+        response = requests.post(f'http://web-auth:8000/auth/base/users_names_dict/', data={"pks": users_pks})
+        if response.status_code == 200:
+            users_names = response.json()
+        else:
+            users_names = None
+            
+        return Response(
+            {
+                "count": len(data),
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "results": data,
+                "users_names": users_names
+            }, status=status.HTTP_200_OK
+            )
 
 # tworzenie/edycja/usuwanie quizu
 class QuizView(ModelViewSet):
@@ -78,7 +104,7 @@ class UserQuizViewSet(ModelViewSet):
         return Quiz.objects.filter(author=self.request.user.id)
     
 # zwaraca wszystkie quizy możliwe do wypęłnienia 
-class QuizViewSet(APIView, PageNumberPagination):
+class QuizViewSet(APIView, QuizSetPagination):
     permission_classes = (AllowAny,)
     authentication_classes = (JWTTokenUserAuthentication,)
 
