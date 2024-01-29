@@ -106,12 +106,22 @@ services:
     depends_on:
       - db-quiz
 
-  web-question-generator:
+  # web-question-generator:
+  #   build: 
+  #     context: ./question_generator
+  #   command: bash initialize.sh
+  #   volumes:
+  #     - ./question_generator:/code
+  #     - media_root:/mediafiles
+  #   ports:
+  #     - "8010:8000"
+    
+  web-question-generator_v2:
     build: 
-      context: ./question_generator
+      context: ./question_generator_v2
     command: bash initialize.sh
     volumes:
-      - ./question_generator:/code
+      - ./question_generator_v2:/code
       - media_root:/mediafiles
     ports:
       - "8010:8000"
