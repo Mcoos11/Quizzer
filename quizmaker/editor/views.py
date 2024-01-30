@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
@@ -74,7 +75,13 @@ class QuizView(ModelViewSet):
     def partial_update(self, request, pk):
         user_id = self.request.user.id
         instance = self.get_object()
-        if Quiz.objects.get(pk=pk).author == user_id:
+        
+        try:
+            quiz = Quiz.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if quiz.author == user_id:
             serializer = self.serializer_class(instance=instance, data=request.data, context={'author': user_id}, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -85,7 +92,11 @@ class QuizView(ModelViewSet):
         return Response({"Fail": "Nie można zaktualizować nieswojego quizu!"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def destroy(self, request, pk):
-        quiz = Quiz.objects.get(pk=pk)
+        try:
+            quiz = Quiz.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if not request.user.pk == quiz.author:
             return Response({"Fail": "To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
         quiz.delete()
@@ -135,7 +146,12 @@ class QuizQuestionViewSet(APIView):
         res_question_n_answers = dict()
         res_answers_types = dict()
         
-        questions = Quiz.objects.get(pk=quiz_pk).get_questions()
+        try:
+            quiz = Quiz.objects.get(pk=quiz_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        questions = quiz.get_questions()
         for question in questions:
             res_questions[question.pk] = question.text
             res_answers_types[question.pk] = question.answers_type
@@ -159,16 +175,20 @@ class QuestionView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     serializer_class = QuizQuestionSerializer
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     http_method_names = ['post', 'patch', 'delete',]
     queryset = QuizQuestion.objects.all()
     lookup_field = "pk"
 
     def create(self, request):
-        quiz_id = self.request.POST.get("quiz")
+        quiz_id = request.data.get("quiz")
         user_id = self.request.user.id
-        if Quiz.objects.get(pk=quiz_id).author == user_id:
-            if request.FILES.get("media") != None and request.POST.get("media_url") != None:
+        try:
+            quiz = Quiz.objects.get(pk=quiz_id)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        if quiz.author == user_id:
+            if request.FILES.get("media") != None and request.data.get("media_url") != None:
                 return Response({"Fail": "Możliwe jest dodanie tylko jednego pliku do pytania!"}, status=status.HTTP_400_BAD_REQUEST)
             serializer = self.serializer_class(data=request.data, context={'author': user_id})
             if serializer.is_valid():
@@ -180,7 +200,11 @@ class QuestionView(ModelViewSet):
         return Response({"Fail": "Nie można utworzyć pytania do nieswojego quizu!"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def destroy(self, request, pk):
-        question = QuizQuestion.objects.get(pk=pk)
+        try:
+            question = QuizQuestion.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)    
+            
         if not request.user.pk == question.author:
             return Response({"Fail": "To nie Twoje pytanie!"}, status=status.HTTP_401_UNAUTHORIZED)
         question.delete()
@@ -189,9 +213,14 @@ class QuestionView(ModelViewSet):
     def partial_update(self, request, pk):
         user_id = self.request.user.id
         instance = self.get_object()
-        if QuizQuestion.objects.get(pk=pk).public:
+        try:
+            question = QuizQuestion.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)   
+        
+        if question.public:
             return Response({"Fail": "Nie można zaktualizować publicznego pytania!"}, status=status.HTTP_400_BAD_REQUEST)
-        if QuizQuestion.objects.get(pk=pk).author == user_id:
+        if question.author == user_id:
             serializer = self.serializer_class(instance=instance, data=request.data, context={'author': user_id}, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -219,9 +248,14 @@ def add_questions_csv(quiz_pk, file_object):
                     text = row[0].replace("ď»ż", ""),
                     answers_type = "jednokrotny" if row[1] == '0' else "wielokrotny",
                 )
-                new_question.quiz.add(Quiz.objects.get(pk=quiz_pk))
+                try:    
+                    quiz = Quiz.objects.get(pk=quiz_pk)
+                except ObjectDoesNotExist:
+                    return False
+                new_question.quiz.add(quiz)
     file_object.activated = True
     file_object.save()
+    return True
     
 # dodawnie nowych pytań z pliku xml do bazy (NIE WIDOK)
 def add_questions_xml(quiz_pk, file_object):
@@ -254,7 +288,12 @@ def add_questions_xml(quiz_pk, file_object):
                         text = question.find('questiontext').find('text').text,
                         answers_type = "jednokrotny" if question.find('single').text == "true" else "wielokrotny"
                     )
-            new_question.quiz.add(Quiz.objects.get(pk=quiz_pk))
+            try:    
+                quiz = Quiz.objects.get(pk=quiz_pk)
+            except ObjectDoesNotExist:
+                return False
+            
+            new_question.quiz.add(quiz)
             
             bs_answers = question.find_all('answer')
             for answer in bs_answers:
@@ -263,6 +302,7 @@ def add_questions_xml(quiz_pk, file_object):
                     correct = True if answer['fraction'] == "100" else False,
                     question = new_question
                 )
+    return True
     
 # odbieranie formularza z przesłanm plikiem csv z pytaniami do dodania,
 # wywoływanie funkcji z zapisem pytań do bazy
@@ -277,9 +317,9 @@ def file_question_upload(request, quiz_pk):
         ext = os.path.splitext(file_object.file_name.path)[1]
         
         if ext == '.csv':
-            add_questions_csv(quiz_pk, file_object)
+            if not add_questions_csv(quiz_pk, file_object): return Response({"Fail": "Błędne dane w pliku."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         elif ext == '.xml':
-            add_questions_xml(quiz_pk, file_object)
+            if not add_questions_xml(quiz_pk, file_object): return Response({"Fail": "Błędne dane w pliku."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             file_object.delete()
             return Response({"Fail": "Nie obsługiwany format pliku."}, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -296,7 +336,10 @@ class QuestionDeleteAll(ModelViewSet):
     lookup_field = "quiz_pk"
     
     def destroy(self, request, quiz_pk):
-        quiz = Quiz.objects.get(pk=quiz_pk)
+        try:
+            quiz = Quiz.objects.get(pk=quiz_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if not request.user.pk == quiz.author:
             return Response({"Fail": "To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
         QuizQuestion.objects.filter(quiz=quiz).delete()
@@ -316,7 +359,11 @@ class QuestionViewSet(ModelViewSet):
         return  QuizQuestion.objects.filter(quiz__in=[Quiz.objects.get(pk=quiz_pk)])
     
     def list(self, request, quiz_pk):
-        if Quiz.objects.get(pk=quiz_pk).author == request.user.id:
+        try:
+            quiz = Quiz.objects.get(pk=quiz_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        if quiz.author == request.user.id:
             query_set = self.get_queryset(quiz_pk)
             page = self.paginate_queryset(query_set)                                                                           
             if page is not None:                                                                                              
@@ -329,7 +376,10 @@ class QuestionViewSet(ModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def quiz_question_set(request, quiz_pk, pass_key=None):
-    quiz = Quiz.objects.get(pk=quiz_pk)
+    try:
+        quiz = Quiz.objects.get(pk=quiz_pk)
+    except ObjectDoesNotExist:
+        return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
     if ACCESS_KEY == pass_key:
         query_set = QuizQuestion.objects.filter(quiz=quiz)
         serialize_data = QuizQuestionSerializer(query_set, many=True).data
@@ -373,7 +423,10 @@ class AnswerView(ModelViewSet):
     def create(self, request):
         question_id = self.request.data["question"]
         user_id = self.request.user.id
-        question = QuizQuestion.objects.get(pk=question_id)
+        try:
+            question = QuizQuestion.objects.get(pk=question_id)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if question.author == user_id:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
@@ -395,7 +448,10 @@ class AnswerView(ModelViewSet):
     def partial_update(self, request, pk):
         user_id = self.request.user.id
         instance = self.get_object()
-        answer = QuizAnswer.objects.get(pk=pk)
+        try:
+            answer = QuizAnswer.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Odpowiedź o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if answer.question.public:
             return Response({"Fail": "Nie można zaktualizować odpowiedzi do publicznego pytania!"}, status=status.HTTP_400_BAD_REQUEST)
         if answer.question.author == user_id:
@@ -417,7 +473,10 @@ class AnswerView(ModelViewSet):
         return Response({"Fail": "Nie można zaktualizować odpowiedzi do nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def destroy(self, request, pk):
-        answer = QuizAnswer.objects.get(pk=pk)
+        try:
+            answer = QuizAnswer.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Odpowieź o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if not request.user.pk == answer.question.author:
             return Response({"Fail": "To nie jest odpowiedź do Twojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
         answer.delete()
@@ -433,7 +492,10 @@ class AnswerViewSet(ModelViewSet):
     pagination_class = PageNumberPagination
     
     def list(self, request, question_pk):
-        question = QuizQuestion.objects.get(pk=question_pk)
+        try:
+            question = QuizQuestion.objects.get(pk=question_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if question.author == request.user.id:
             query_set = QuizAnswer.objects.filter(question=question)
             query_set =  self.paginate_queryset(query_set)
@@ -444,7 +506,10 @@ class AnswerViewSet(ModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def quiz_answer_set(request, question_pk, pass_key=None):
-    question = QuizQuestion.objects.get(pk=question_pk)
+    try:
+        question = QuizQuestion.objects.get(pk=question_pk)
+    except ObjectDoesNotExist:
+        return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
     if ACCESS_KEY == pass_key:
         query_set = QuizAnswer.objects.filter(question=question)
         serialize_data = QuizAnswerSerializer(query_set, many=True).data
@@ -455,7 +520,10 @@ def quiz_answer_set(request, question_pk, pass_key=None):
 @permission_classes([IsAuthenticated])
 def download_backup_csv(request, quiz_pk):
     if request.method == 'GET':
-        quiz = Quiz.objects.get(pk=quiz_pk)
+        try:
+            quiz = Quiz.objects.get(pk=quiz_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if not request.user.pk == quiz.author:
             return Response({"To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
         questions = QuizQuestion.objects.filter(quiz=quiz)
@@ -479,7 +547,10 @@ def download_backup_csv(request, quiz_pk):
 @permission_classes([IsAuthenticated])
 def download_backup_xml(request, quiz_pk):
     if request.method == 'GET':
-        quiz = Quiz.objects.get(pk=quiz_pk)
+        try:
+            quiz = Quiz.objects.get(pk=quiz_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Quiz o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
         if not request.user.pk == quiz.author:
             return Response({"To nie Twój quiz!"}, status=status.HTTP_401_UNAUTHORIZED)
         questions = QuizQuestion.objects.filter(quiz=quiz)
