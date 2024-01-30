@@ -13,6 +13,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/proxy_params:/etc/nginx/conf.d/proxy_params:ro
       - react_build:/react/dist
       - ./authentication/static:/static_web_auth
       - type: volume

@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTTokenUserAuthentication
@@ -8,7 +9,6 @@ from .models import Survey, SurveyQuestion, SurveyAnswer, SurveyFile
 from .serializers import SurveySerializer, SurveyQuestionSerializer, SurveyAnswerSerializer, SurveyFileSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from rest_framework.decorators import api_view, permission_classes
@@ -40,7 +40,12 @@ class SurveyView(ModelViewSet):
     def partial_update(self, request, pk):
         user_id = self.request.user.id
         instance = self.get_object()
-        if Survey.objects.get(pk=pk).author == user_id:
+        try:
+            survey = Survey.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if survey.author == user_id:
             serializer = self.serializer_class(instance=instance, data=request.data, context={'author': user_id}, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -51,7 +56,11 @@ class SurveyView(ModelViewSet):
         return Response({"Fail": "Nie można zaktualizować nieswojej ankiety!"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def destroy(self, request, pk):
-        survey = Survey.objects.get(pk=pk)
+        try:
+            survey = Survey.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+
         if not request.user.pk == survey.author:
             return Response({"Fail": "To nie Twoja ankieta!"}, status=status.HTTP_401_UNAUTHORIZED)
         survey.delete()
@@ -104,7 +113,11 @@ class SurveyQuestionViewSet(APIView):
         res_question_n_answers = dict()
         res_answers_types = dict()
         
-        questions = Survey.objects.get(pk=survey_pk).get_questions()
+        try:
+            questions = Survey.objects.get(pk=survey_pk).get_questions()
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         for question in questions:
             res_questions[question.pk] = question.text
             res_answers_types[question.pk] = question.answers_type
@@ -128,16 +141,21 @@ class QuestionView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     serializer_class = SurveyQuestionSerializer
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     http_method_names = ['post', 'patch', 'delete',]
     queryset = SurveyQuestion.objects.all()
     lookup_field = "pk"
 
     def create(self, request):
-        survey_id = self.request.POST.get("survey")
+        survey_id = self.request.data.get("survey")[0]
         user_id = self.request.user.id
-        if Survey.objects.get(pk=survey_id).author == user_id:
-            if request.FILES.get("media") != None and request.POST.get("media_url") != None:
+        try:
+            survey = Survey.objects.get(pk=survey_id)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if survey.author == user_id:
+            if request.FILES.get("media") != None and request.data.get("media_url") != None:
                 return Response({"Fail": "Możliwe jest dodanie tylko jednego pliku do pytania!"}, status=status.HTTP_400_BAD_REQUEST)
             serializer = self.serializer_class(data=request.data, context={'author': user_id})
             if serializer.is_valid():
@@ -149,7 +167,11 @@ class QuestionView(ModelViewSet):
         return Response({"Fail": "Nie można utworzyć pytania do nieswojj ankiety!"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def destroy(self, request, pk):
-        question = SurveyQuestion.objects.get(pk=pk)
+        try:
+            question = SurveyQuestion.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if not request.user.pk == question.author:
             return Response({"Fail": "To nie Twoje pytanie!"}, status=status.HTTP_401_UNAUTHORIZED)
         question.delete()
@@ -158,7 +180,12 @@ class QuestionView(ModelViewSet):
     def partial_update(self, request, pk):
         user_id = self.request.user.id
         instance = self.get_object()
-        if SurveyQuestion.objects.get(pk=pk).author == user_id:
+        try:
+            question = SurveyQuestion.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if question.author == user_id:
             serializer = self.serializer_class(instance=instance, data=request.data, context={'author': user_id}, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -187,9 +214,14 @@ def add_questions_csv(survey_pk, file_object):
                     answers_type = "jednokrotny" if row[1] == '0' else "wielokrotny",
                     status = False
                 )
-                new_question.survey.add(Survey.objects.get(pk=survey_pk))
+                try:
+                    survey = Survey.objects.get(pk=survey_pk)
+                except ObjectDoesNotExist:
+                    return False
+                new_question.survey.add(survey)
     file_object.activated = True
     file_object.save()
+    return True
     
 # dodawnie nowych pytań z pliku xml do bazy (NIE WIDOK)
 def add_questions_xml(survey_pk, file_object):
@@ -225,7 +257,11 @@ def add_questions_xml(survey_pk, file_object):
                         answers_type = "jednokrotny" if question.find('single').text == "true" else "wielokrotny",
                         status = False,
                     )
-            new_question.survey.add(Survey.objects.get(pk=survey_pk))
+            try:
+                survey = Survey.objects.get(pk=survey_pk)
+            except ObjectDoesNotExist:
+                return False
+            new_question.survey.add(survey)
             
             bs_answers = question.find_all('answer')
             for answer in bs_answers:
@@ -234,6 +270,7 @@ def add_questions_xml(survey_pk, file_object):
                     correct = bool(answer['user-answer']),
                     question = new_question,
                 )
+    return True
     
 # odbieranie formularza z przesłanm plikiem csv z pytaniami do dodania,
 # wywoływanie funkcji z zapisem pytań do bazy
@@ -248,9 +285,9 @@ def file_question_upload(request, survey_pk):
         ext = os.path.splitext(file_object.file_name.path)[1]
         
         if ext == '.csv':
-            add_questions_csv(survey_pk, file_object)
+            if not add_questions_csv(survey_pk, file_object): return Response({"Fail": "Błędne dane w pliku."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         elif ext == '.xml':
-            add_questions_xml(survey_pk, file_object)
+            if not add_questions_xml(survey_pk, file_object): return Response({"Fail": "Błędne dane w pliku."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             file_object.delete()
             return Response({"Fail": "Nie obsługiwany format pliku."}, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -267,7 +304,10 @@ class QuestionDeleteAll(ModelViewSet):
     lookup_field = "survey_pk"
     
     def destroy(self, request, survey_pk):
-        survey = Survey.objects.get(pk=survey_pk)
+        try:
+            survey = Survey.objects.get(pk=survey_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST) 
         if not request.user.pk == survey.author:
             return Response({"Fail": "To nie Twoja ankieta!"}, status=status.HTTP_401_UNAUTHORIZED)
         SurveyQuestion.objects.filter(survey=survey).delete()
@@ -284,7 +324,12 @@ class QuestionViewSet(ModelViewSet):
     pagination_class = PageNumberPagination
     
     def list(self, request, survey_pk):
-        if Survey.objects.get(pk=survey_pk).author == request.user.id:
+        try:
+            survey = Survey.objects.get(pk=survey_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if survey.author == request.user.id:
             query_set = SurveyQuestion.objects.filter(survey__in=[Survey.objects.get(pk=survey_pk)])
             query_set =  self.paginate_queryset(query_set)
             serialize_data = self.serializer_class(query_set, many=True).data
@@ -294,9 +339,13 @@ class QuestionViewSet(ModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def survey_question_set(request, survey_pk, pass_key=None):
-    quiz = Survey.objects.get(pk=survey_pk)
+    try:
+        survey = Survey.objects.get(pk=survey_pk)
+    except ObjectDoesNotExist:
+        return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+
     if ACCESS_KEY == pass_key:
-        query_set = SurveyQuestion.objects.filter(quiz=quiz)
+        query_set = SurveyQuestion.objects.filter(survey=survey)
         serialize_data = SurveyQuestionSerializer(query_set, many=True).data
         return Response(serialize_data, status=status.HTTP_200_OK)
     return Response({"Fail": "Błędny klucz dostępu!"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -314,7 +363,11 @@ class AnswerView(ModelViewSet):
     def create(self, request):
         question_id = self.request.data["question"]
         user_id = self.request.user.id
-        question = SurveyQuestion.objects.get(pk=question_id)
+        try:
+            question = SurveyQuestion.objects.get(pk=question_id)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if question.author == user_id:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
@@ -336,7 +389,11 @@ class AnswerView(ModelViewSet):
     def partial_update(self, request, pk):
         user_id = self.request.user.id
         instance = self.get_object()
-        answer = SurveyAnswer.objects.get(pk=pk)
+        try:
+            answer = SurveyAnswer.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Odpowiedź o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if answer.question.public:
             return Response({"Fail": "Nie można zaktualizować odpowiedzi do publicznego pytania!"}, status=status.HTTP_400_BAD_REQUEST)
         if answer.question.author == user_id:
@@ -358,7 +415,11 @@ class AnswerView(ModelViewSet):
         return Response({"Fail": "Nie można zaktualizować odpowiedzi do nieswojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
     
     def destroy(self, request, pk):
-        answer = SurveyAnswer.objects.get(pk=pk)
+        try:
+            answer = SurveyAnswer.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Odpowiedź o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if not request.user.pk == answer.question.author:
             return Response({"Fail": "To nie jest odpowiedź do Twojego pytania!"}, status=status.HTTP_401_UNAUTHORIZED)
         answer.delete()
@@ -374,7 +435,11 @@ class AnswerViewSet(ModelViewSet):
     pagination_class = PageNumberPagination
     
     def list(self, request, question_pk):
-        question = SurveyQuestion.objects.get(pk=question_pk)
+        try:
+            question = SurveyQuestion.objects.get(pk=question_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if question.author == request.user.id:
             query_set = SurveyAnswer.objects.filter(question=question)
             query_set =  self.paginate_queryset(query_set)
@@ -385,7 +450,11 @@ class AnswerViewSet(ModelViewSet):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def survey_answer_set(request, question_pk, pass_key=None):
-    question = SurveyQuestion.objects.get(pk=question_pk)
+    try:
+        question = SurveyQuestion.objects.get(pk=question_pk)
+    except ObjectDoesNotExist:
+        return Response({"Fail": "Pytanie o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+    
     if ACCESS_KEY == pass_key:
         query_set = SurveyAnswer.objects.filter(question=question)
         serialize_data = SurveyAnswerSerializer(query_set, many=True).data
@@ -396,7 +465,11 @@ def survey_answer_set(request, question_pk, pass_key=None):
 @permission_classes([IsAuthenticated])
 def download_backup_csv(request, survey_pk):
     if request.method == 'GET':
-        survey = Survey.objects.get(pk=survey_pk)
+        try:
+            survey = Survey.objects.get(pk=survey_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if not request.user.pk == survey.author:
             return Response({"To nie Twoja ankieta!"}, status=status.HTTP_401_UNAUTHORIZED)
         questions = SurveyQuestion.objects.filter(survey=survey)
@@ -421,7 +494,11 @@ def download_backup_csv(request, survey_pk):
 @permission_classes([IsAuthenticated])
 def download_backup_xml(request, survey_pk):
     if request.method == 'GET':
-        survey = Survey.objects.get(pk=survey_pk)
+        try:
+            survey = Survey.objects.get(pk=survey_pk)
+        except ObjectDoesNotExist:
+            return Response({"Fail": "Ankieta o podanym id nie istnieje!"}, status=status.HTTP_400_BAD_REQUEST)
+
         if not request.user.pk == survey.author:
             return Response({"To nie Twoja ankieta!"}, status=status.HTTP_401_UNAUTHORIZED)
         questions = SurveyQuestion.objects.filter(survey=survey)
