@@ -67,6 +67,8 @@ class QuizSolveView(APIView):
                             answers = answer_response.json()
                             # Wymieszaj odpowiedzi
                             shuffle(answers)
+                            for answer in answers:
+                                answer.pop('correct', None)
                             question['answers'] = answers
                         else:
                             return Response({'error': 'Błąd pobierania danych o odpowiedziach'},
