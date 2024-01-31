@@ -3,13 +3,15 @@ import QuizEntry from '../QuizEntry';
 import TextInput from '../TextInput';
 import './Profile.css';
 import React, { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { delete_quiz, get_user_quiz_set } from '../../actions/quiz_editor';
 import { connect, useDispatch, useSelector } from 'react-redux';
 import store from '../../store';
 import default_avatar from '../../../img/default_avatar.png';
 
 function Profile( {isAuthenticated}: any) {
+
+    const navigate = useNavigate();
 
     if(!isAuthenticated){
         return <Navigate to='/Login' />;
@@ -54,6 +56,7 @@ function Profile( {isAuthenticated}: any) {
         if(confirm("Czy na pewno chcesz usunąć quiz: " + quizName)) {
             try {
                 await delete_quiz(pk);
+                window.location.reload();
             } catch (error) {
                 console.error("quiz couldn't be deleted");
             }
@@ -77,6 +80,7 @@ function Profile( {isAuthenticated}: any) {
             {quizzesList.results.map((item, id) => (
                 <QuizEntry key={id} name={item.name} description={item.topic} author={userName}>
                     <Button className="secondary delete-button" onClick={() => deleteQuiz(item.name, item.pk)}>Usuń</Button>
+                    <Button className="secondary edit-button" onClick={() => {navigate('/Edit-Quiz/' + item.pk);}}>Edytuj</Button>
                 </QuizEntry>
             ))}
         </section>

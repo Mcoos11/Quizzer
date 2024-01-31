@@ -1,11 +1,22 @@
 
+.go-back {
+    margin: -10px;
+    font-weight: 600;
+}
+
+.go-back:hover {
+    color: #444;
+    cursor: pointer;
+}
+
 .create-quiz-form {
-    margin-top: 100px;
+    margin-top: 70px;
     padding: 20px;
 }
 
 
 .create-quiz-form h1{
+    margin-top: 20px;
     margin-bottom: 20px;
 }
 

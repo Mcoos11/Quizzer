@@ -43,6 +43,7 @@
     text-align: center;
 }
 
+
 .info-section {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -156,4 +157,15 @@
     max-width: 100%;
     object-fit: cover;
     margin-bottom: 10px;
+}
+
+@media screen and (max-width: 800px) {
+    .info-section {
+        grid-template-rows: 2fr 1fr;
+        grid-template-columns: 1fr;
+    }
+    
+    .authors-list {
+        flex-direction: column;
+    }
 }
