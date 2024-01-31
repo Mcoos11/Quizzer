@@ -1,7 +1,9 @@
 import './QuizEntry.css'
 import Button from './Button.tsx'
+import { useNavigate } from 'react-router-dom';
 
 function QuizEntry(props : any) {
+    const navigate = useNavigate();
 
     return (
         <>
@@ -9,7 +11,7 @@ function QuizEntry(props : any) {
                 <div className="quiz-entry-name">{props.name}</div>
                 <div className="quiz-entry-description">{props.description}</div>
                 <div className="quiz-entry-author">Autor: {props.author}</div>
-                <Button className="primary quiz-entry-button">Rozwiąż</Button>
+                <Button className="primary quiz-entry-button" onClick={() => navigate('/Quiz/' + props.pk)} >Rozwiąż</Button>
                 {props.children}
             </div>
         </>

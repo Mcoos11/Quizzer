@@ -78,7 +78,7 @@ function Profile( {isAuthenticated}: any) {
         <section className="user-quizzes">
             <h1>Twoje quizy</h1>
             {quizzesList.results.map((item, id) => (
-                <QuizEntry key={id} name={item.name} description={item.topic} author={userName}>
+                <QuizEntry key={id} pk={item.pk} name={item.name} description={item.topic} author={userName}>
                     <Button className="secondary delete-button" onClick={() => deleteQuiz(item.name, item.pk)}>Usuń</Button>
                     <Button className="secondary edit-button" onClick={() => {navigate('/Edit-Quiz/' + item.pk);}}>Edytuj</Button>
                 </QuizEntry>

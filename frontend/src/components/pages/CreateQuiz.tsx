@@ -24,7 +24,7 @@ function CreateQuiz( {isAuthenticated}: any) {
         e.preventDefault();
         const postQuery = async () => {
             try {
-                let res = await create_quiz(formData.title, formData.description, 0, 0, 0, formData.difficulty);
+                let res = await create_quiz(formData.title, formData.description, 5, 20, 3, formData.difficulty);
                 console.log(res);
                 navigate('/Edit-Quiz/' + res.pk);
             } catch (error) {
