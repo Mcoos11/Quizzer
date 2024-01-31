@@ -13,6 +13,7 @@ import { Provider } from 'react-redux';
 import store from './store';
 import CreateQuiz from './components/pages/CreateQuiz'
 import Profile from './components/pages/Profile'
+import EditQuiz from './components/pages/EditQuiz'
 
 function App() {
   
@@ -30,6 +31,7 @@ function App() {
             <Route path="/Registration" element={<Registration />} />
             <Route path="/Quizzes" element={<Quizzes />} />
             <Route path="/Create-Quiz" element={<CreateQuiz />} />
+            <Route path="/Edit-Quiz/:quiz_pk" element={<EditQuiz />} />
             <Route path="/Quiz" element={<Quiz />} />
             <Route path="/Courses" element={<Courses />} />
             <Route path="/QuestionGenerator" element={<QuestionGenerator />} />

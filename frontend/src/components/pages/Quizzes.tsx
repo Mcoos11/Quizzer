@@ -11,8 +11,10 @@ function Quizzes() {
     const [quizzesList, setQuizzesList] = useState({
         results: [{
             name: "",
-            topic: ""
-        }]
+            topic: "",
+            author: 0
+        }],
+        users_names: []
     });
     
     // setQuizzesList(get_user_quiz_set());
@@ -68,7 +70,7 @@ function Quizzes() {
             <QuizEntry name="Geografia" description={desc} author="Jan Kowalski"></QuizEntry>
             <QuizEntry name="Chemia" description={desc} author="Jan Kowalski"></QuizEntry> */}
             {quizzesList.results.map((item, id) => (
-                <QuizEntry key={id} name={item.name} description={item.topic} author={"userName"}></QuizEntry>
+                <QuizEntry key={id} name={item.name} description={item.topic} author={quizzesList.users_names[item.author]}></QuizEntry>
             ))}
 
         </>

@@ -4,12 +4,13 @@ import TextInput from '../TextInput';
 import './CreateQuiz.css'
 import { create_quiz } from '../../actions/quiz_editor';
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import store from '../../store'
 import Select from 'react-select'
 
 function CreateQuiz( {isAuthenticated}: any) {
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         title: '',
@@ -23,8 +24,9 @@ function CreateQuiz( {isAuthenticated}: any) {
         e.preventDefault();
         const postQuery = async () => {
             try {
-                await create_quiz(formData.title, formData.description, 0, 0, 0, formData.difficulty);
-                return <Navigate to='/Quizzes' />
+                let res = await create_quiz(formData.title, formData.description, 0, 0, 0, formData.difficulty);
+                console.log(res);
+                navigate('/Edit-Quiz/' + res.pk);
             } catch (error) {
                 console.error("Quiz couldn't be created");
             }
