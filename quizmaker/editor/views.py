@@ -415,13 +415,13 @@ class AnswerView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTTokenUserAuthentication,)
     serializer_class = QuizAnswerSerializer
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
     http_method_names = ['post', 'patch', 'delete',]
     queryset = QuizAnswer.objects.all()
     lookup_field = "pk"
 
     def create(self, request):
-        question_id = self.request.data["question"]
+        question_id = self.request.data.get("question")
         user_id = self.request.user.id
         try:
             question = QuizQuestion.objects.get(pk=question_id)
@@ -430,7 +430,7 @@ class AnswerView(ModelViewSet):
         if question.author == user_id:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
-                if self.request.data['correct'] and question.answers_type == 'jednokrotny':
+                if self.request.data.get('correct') and question.answers_type == 'jednokrotny':
                     other_answers = QuizAnswer.objects.filter(question=question, correct=True).values_list('correct', flat=True)
                     if True in other_answers:
                         return Response({"Fail": 'Istnieje już poprawna odpowiedź dla tego pytania! Dla pytań jednokrotnego wyboru dopuszczalna jest tylko jedna poprawna odpowiedź.'}, status=status.HTTP_409_CONFLICT)
