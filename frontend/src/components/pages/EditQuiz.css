@@ -10,8 +10,18 @@
     font-size: 1.1em;
 }
 
+.question-entry.active {
+    background-color: #caffe0;
+
+}
+
 .question-entry:hover {
     background-color: #EEE;
+}
+
+.question-entry.active:hover {
+    background-color: #baefd0;
+
 }
 
 .form-button-container {

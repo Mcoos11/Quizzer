@@ -56,6 +56,7 @@ function Profile( {isAuthenticated}: any) {
         if(confirm("Czy na pewno chcesz usunąć quiz: " + quizName)) {
             try {
                 await delete_quiz(pk);
+                window.location.reload();
             } catch (error) {
                 console.error("quiz couldn't be deleted");
             }

@@ -182,9 +182,96 @@ export const create_question = async (text: string, quiz: number, author: number
     };
 
     try {
-        console.log("quiz post");
         const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/quiz_editor/question/`, body, config);
 
+        const data = res.data;
+        return data;
+    } catch (error: any) {
+        console.error('Error fetching data:', error.message);
+    }
+};
+
+export const delete_question = async (pk: number) => {
+ 
+    const config = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${localStorage.getItem('access')}`,
+            'Accept': '*/*'
+        }
+    };
+
+    try {
+        const res = await axios.delete(`${import.meta.env.VITE_APP_API_URL}/quiz_editor/question/${pk}/`, config);
+
+        // Access the response data
+        const data = res.data;
+        return data;
+    } catch (error: any) {
+        console.error('Error fetching data:', error.message);
+    }
+};
+
+export const get_answer_set = async (pk: number) => {
+ 
+    const config = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${localStorage.getItem('access')}`,
+            'Accept': '*/*'
+        }
+    };
+
+    try {
+        const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/quiz_editor/answer_set/${pk}/`, config);
+
+        // Access the response data
+        const data = res.data;
+        return data;
+    } catch (error: any) {
+        console.error('Error fetching data:', error.message);
+    }
+};
+
+export const create_answer = async (text: string, question: number, correct: boolean) => {
+    const body = JSON.stringify({ "text": text, "question": question, "correct": correct });
+
+    const config = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${localStorage.getItem('access')}`,
+            'Accept': '*/*'
+        }
+    };
+
+    try {
+        const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/quiz_editor/answer/`, body, config);
+
+        const data = res.data;
+        return data;
+    } catch (error: any) {
+        console.error('Error fetching data:', error.message);
+    }
+};
+
+export const delete_answer = async (pk: number) => {
+ 
+    const config = {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${localStorage.getItem('access')}`,
+            'Accept': '*/*'
+        }
+    };
+
+    try {
+        const res = await axios.delete(`${import.meta.env.VITE_APP_API_URL}/quiz_editor/answer/${pk}/`, config);
+
+        // Access the response data
         const data = res.data;
         return data;
     } catch (error: any) {

@@ -15,6 +15,8 @@ import CreateQuiz from './components/pages/CreateQuiz'
 import Profile from './components/pages/Profile'
 import EditQuiz from './components/pages/EditQuiz'
 import CreateQuestion from './components/pages/CreateQuestion'
+import EditQuestion from './components/pages/EditQuestion'
+import CreateAnswer from './components/pages/CreateAnswer'
 
 function App() {
   
@@ -34,6 +36,8 @@ function App() {
             <Route path="/Create-Quiz" element={<CreateQuiz />} />
             <Route path="/Edit-Quiz/:quiz_pk" element={<EditQuiz />} />
             <Route path="/Create-Question/:quiz_pk" element={<CreateQuestion />} />
+            <Route path="/Edit-Question/:quiz_pk/:question_pk" element={<EditQuestion />} />
+            <Route path="/Create-Answer/:quiz_pk/:question_pk" element={<CreateAnswer />} />
             <Route path="/Quiz" element={<Quiz />} />
             <Route path="/Courses" element={<Courses />} />
             <Route path="/QuestionGenerator" element={<QuestionGenerator />} />

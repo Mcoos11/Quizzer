@@ -47,6 +47,7 @@ function CreateQuiz( {isAuthenticated}: any) {
     return (
         <>
         <form className="create-quiz-form" onSubmit={e => onSubmit(e)}>
+            <span className="go-back" onClick={() => navigate('/Quizzes')}>{'<'} Quizy</span>
             <h1>Stwórz Quiz</h1>
             <TextInput
                         name='title'
