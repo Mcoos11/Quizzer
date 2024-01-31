@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.http.response import JsonResponse
 from quizsolver.settings import MEDIA_ROOT, ACCES_KEY
+from .models import QuizResult
 import requests
 import random
 from random import shuffle
@@ -201,6 +202,18 @@ class QuizResultView(APIView):
         else:
             return Response({'error': 'Błąd pobierania danych o quizach'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserQuizResultsView(APIView):
+    def get(self, request, user_id):
+        try:
+            quiz_results = QuizResult.objects.filter(user=user_id)
+            serializer = QuizResultSerializer(quiz_results, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except QuizResult.DoesNotExist:
+            return Response({'error': 'Brak wyników dla podanego użytkownika'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': 'Wystąpił błąd podczas pobierania wyników quizów użytkownika'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
