@@ -156,7 +156,7 @@ STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'mediafiles')
 
 # URL used to access the media
-MEDIA_URL = 'quiz_solver/mediafiles/'
+MEDIA_URL = 'quiz_editor/mediafiles/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
