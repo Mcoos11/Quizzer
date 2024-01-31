@@ -31,6 +31,45 @@
     width: 100%;
 }
 
+.mobile-nav-button {
+    display: none;
+    position: absolute;
+    background-image: url('../../img/mobile-icon.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    right: 10px;
+}
+
+
+@media screen and (max-width: 800px) {
+    .main-nav {
+        position: absolute;
+        top: 70px;
+        background-color: #fff;
+        padding: 25px;
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+    }
+
+    .main-nav.active {
+        display: none;
+    }
+    /* .mobile-nav-button:focus + .main-nav {
+        display: block;
+    } */
+
+    .main-nav ul {
+        flex-direction: column;
+    }
+    
+    .mobile-nav-button {
+        display: block;
+    }
+}
+
 .main-nav ul {
     display: flex;
     justify-content: flex-end;
@@ -75,6 +114,7 @@
 
 .login-container {
     display: flex;
+    margin: 0 0;
     gap: 10px;
     padding: 0 15px 0 10px;
 }

@@ -181,7 +181,7 @@ class QuestionView(ModelViewSet):
     lookup_field = "pk"
 
     def create(self, request):
-        quiz_id = request.data.get("quiz")
+        quiz_id = request.data.get("quiz")[0]
         user_id = self.request.user.id
         try:
             quiz = Quiz.objects.get(pk=quiz_id)

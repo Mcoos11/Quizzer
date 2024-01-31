@@ -1,8 +1,8 @@
 import './Navbar.css'
 import Button from './Button.tsx'
-import logo from '../../img/logo.png'
+import logo from '../../img/logo.webp'
 
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -11,6 +11,13 @@ import { load_user } from '../actions/auth';
 import store from '../store'
 
 function Navbar({ load_user, logout, isAuthenticated }: any) {
+    
+    const [isActive, setIsActive] = useState(false);
+
+    // Function to toggle the class
+    const toggleClass = () => {
+      setIsActive(!isActive);
+    };
 
     load_user();
     const guestLinks = () => {return (
@@ -33,17 +40,18 @@ function Navbar({ load_user, logout, isAuthenticated }: any) {
             <h3 className="logo">
                 <img src={logo}></img>
             </h3>
-            <nav className="main-nav">
+            <div className="mobile-nav-button" onClick={toggleClass}></div>
+            <nav className={`main-nav ${isActive ? 'active' : ''}`}>
                 <ul>
                     <li><a href="/Home">O nas</a></li>
                     <li><a href="/Courses">Kursy</a></li>
                     <li><a href="/Quizzes">Quizy</a></li>
                     <li><a href="/QuestionGenerator">Generowanie pytań</a></li>
+                    <div className="login-container">
+                        {isAuthenticated ? authLinks() : guestLinks()}
+                    </div>
                 </ul>
             </nav>
-            <div className="login-container">
-                {isAuthenticated ? authLinks() : guestLinks()}
-            </div>
         </header>
      );
 }
