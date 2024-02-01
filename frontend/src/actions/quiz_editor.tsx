@@ -169,8 +169,22 @@ export const get_question_set = async (pk: number) => {
     }
 };
 
-export const create_question = async (text: string, quiz: number, author: number, answer_type: string) => {
-    const body = JSON.stringify({ "text": text, "quiz": [quiz], "author": author, "answer_type": answer_type });
+export const create_question = async (text: string, quiz: number, author: number, answer_type: string, media_url?: string) => {
+    // const mediaUrl = media_url ? "media_url: " + media_url : "";
+
+    interface Body {
+        text: string;
+        quiz: number[];
+        author: number;
+        answer_type: string;
+        media_url?: string;
+    }
+
+    let json: Body = { "text": text, "quiz": [quiz], "author": author, "answer_type": answer_type};
+    if( media_url ) {json.media_url = media_url}
+    const body = JSON.stringify(json);
+    console.log(body);
+    // const body = JSON.stringify({ "text": text, "quiz": [quiz], "author": author, "answer_type": answer_type, "media_url": media_url?media_url:""});
 
     const config = {
         method: 'POST',

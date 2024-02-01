@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
 import { load_user } from '../actions/auth';
 import store from '../store'
+import default_avatar from '../../img/default_avatar.png';
 
 function Navbar({ load_user, logout, isAuthenticated }: any) {
     
@@ -31,6 +32,7 @@ function Navbar({ load_user, logout, isAuthenticated }: any) {
         <div className="profile-container">
             <Button className="primary" onClick={logout}>Wyloguj</Button>
             <a href="/Profile" className="user-name">{String(store.getState()?.auth?.user?.first_name) + " " + String(store.getState()?.auth?.user?.last_name)}</a>
+            <img src={default_avatar}></img>
         </div>
     )};
 
@@ -44,7 +46,7 @@ function Navbar({ load_user, logout, isAuthenticated }: any) {
             <nav className={`main-nav ${isActive ? 'active' : ''}`}>
                 <ul>
                     <li><a href="/Home">O nas</a></li>
-                    <li><a href="/Courses">Kursy</a></li>
+                    {/* <li><a href="/Courses">Kursy</a></li> */}
                     <li><a href="/Quizzes">Quizy</a></li>
                     <li><a href="/QuestionGenerator">Generowanie pytań</a></li>
                     <div className="login-container">

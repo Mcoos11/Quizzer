@@ -1,0 +1,70 @@
+
+@keyframes fallFromTop {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+}
+
+.results {
+    margin-top: 100px;
+    animation: fallFromTop 2s ease-in-out;
+}
+
+.results h1 {
+    font-size: 3em;
+    text-align: center;
+    color: #333;
+}
+
+.results h2 {
+    font-size: 5em;
+    margin: 80px 0;
+    text-align: center;
+    color:#bd1c1c;
+}
+
+.results h2.active {
+    color: #39b960;
+}
+
+.results h3 {
+    font-size: 2em;
+    text-align: center;
+    color: #333;
+}
+
+.result-details {
+    display: flex;
+    padding: 50px 0;
+}
+
+.result-details label {
+    font-weight: 600;
+    font-size: 1em;
+    text-align: center;
+    color: #333;
+}
+
+.result-details div {
+    font-weight: 600;
+    font-size: 3em;
+    text-align: center;
+    color: #000;
+}
+
+.result-date {
+    font-weight: 600;
+    font-size: 1em;
+    text-align: center;
+    color: #333;
+}
+
+.result-date div {
+    font-weight: 600;
+    font-size: 3em;
+    text-align: center;
+    color: #000;
+}

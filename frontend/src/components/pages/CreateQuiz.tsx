@@ -16,15 +16,17 @@ function CreateQuiz( {isAuthenticated}: any) {
         title: '',
         description: '',
         difficulty: '',
+        count: 1,
+        scoreToPass: 1,
     });
 
-    const { title, description, difficulty } = formData;
+    const { title, description, difficulty, count, scoreToPass } = formData;
     const onChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
     const onSubmit = (e: any) => {
         e.preventDefault();
         const postQuery = async () => {
             try {
-                let res = await create_quiz(formData.title, formData.description, 5, 20, 3, formData.difficulty);
+                let res = await create_quiz(formData.title, formData.description, formData.count, 20, formData.scoreToPass, formData.difficulty);
                 console.log(res);
                 navigate('/Edit-Quiz/' + res.pk);
             } catch (error) {
@@ -64,6 +66,14 @@ function CreateQuiz( {isAuthenticated}: any) {
                         options={difficulty_levels}
                         value={difficulty_levels.find(option => option.value === formData.difficulty)}
                         onChange={(e: any) => {setFormData({ ...formData, difficulty: e.value })}} /><br></br>
+            <TextInput  type="number" min={1}
+                        name='count'
+                        value={count}
+                        onChange={(e: any) => onChange(e)}>Ilość pytań</TextInput>
+            <TextInput  type="number" min={1}
+                        name='scoreToPass'
+                        value={scoreToPass}
+                        onChange={(e: any) => onChange(e)}>Próg zaliczenia</TextInput>
             <Button className="primary" type="submit">Stwórz</Button>
         </form>
         </>

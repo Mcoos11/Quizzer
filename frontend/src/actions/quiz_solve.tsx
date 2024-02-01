@@ -44,3 +44,25 @@ export const send_results = async (pk: number, body: object) => {
         console.error('Error fetching data:', error.message);
     }
 };
+
+export const get_user_results = async (pk: number) => {
+ 
+    const config = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `JWT ${localStorage.getItem('access')}`,
+            'Accept': '*/*'
+        }
+    };
+
+    try {
+        const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/quiz_solver/user_result/${pk}/`, config)
+
+        // Access the response data
+        const data = res.data;
+        return data;
+    } catch (error: any) {
+        console.error('Error fetching data:', error.message);
+    }
+};

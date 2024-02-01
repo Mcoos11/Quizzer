@@ -17,6 +17,7 @@ import EditQuiz from './components/pages/EditQuiz'
 import CreateQuestion from './components/pages/CreateQuestion'
 import EditQuestion from './components/pages/EditQuestion'
 import CreateAnswer from './components/pages/CreateAnswer'
+import Results from './components/pages/Results'
 
 function App() {
   
@@ -39,6 +40,7 @@ function App() {
             <Route path="/Edit-Question/:quiz_pk/:question_pk" element={<EditQuestion />} />
             <Route path="/Create-Answer/:quiz_pk/:question_pk" element={<CreateAnswer />} />
             <Route path="/Quiz/:quiz_pk" element={<Quiz />} />
+            <Route path="/Results/:quiz_pk" element={<Results />} />
             <Route path="/Courses" element={<Courses />} />
             <Route path="/QuestionGenerator" element={<QuestionGenerator />} />
           </Routes>

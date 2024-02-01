@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './Quiz.css'
 import { get_quiz, send_results } from '../../actions/quiz_solve';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../Button';
 
 // const q1 = {
@@ -64,6 +64,8 @@ import Button from '../Button';
 function Quiz() {
     const { quiz_pk } = useParams();
     const quiz_pk_number = quiz_pk ? parseInt(quiz_pk, 10) : -1;
+
+    const navigate = useNavigate();
 
     let [currentQuestion, setCurrent] = useState(0);
     let [quiz, setQuiz] = useState(
@@ -202,14 +204,13 @@ function Quiz() {
     const finishQuiz = () => {
         if(confirm("Czy na pewno chcesz zakończyć rozwiązywanie quizu?")) {
             const body = { results: userAnswers };
-            send_results(quiz_pk_number, body);
             const postQuery = async () => {
                 try {
                     let res = await send_results(quiz_pk_number, body);
                     console.log(res);
-                    // navigate('/Edit-Quiz/' + quiz_pk);
-                } catch (error) {
-                    console.error("Quiz couldn't be created");
+                    navigate('/Results/' + quiz_pk);
+                } catch (error: any) {
+                    console.error(error.message);
                 }
             }
             postQuery();

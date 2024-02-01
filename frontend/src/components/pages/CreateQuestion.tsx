@@ -17,15 +17,16 @@ function CreateQuestion( {isAuthenticated}: any) {
     const [formData, setFormData] = useState({
         text: '',
         answer_type:'',
+        mediaUrl: '',
     });
 
-    const { text, answer_type } = formData;
+    const { text, answer_type, mediaUrl } = formData;
     const onChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
     const onSubmit = (e: any) => {
         e.preventDefault();
         const postQuery = async () => {
             try {
-                let res = await create_question(formData.text, quiz_pk_number, store.getState()?.auth?.user?.id, formData.answer_type);
+                let res = await create_question(formData.text, quiz_pk_number, store.getState()?.auth?.user?.id, formData.answer_type, formData.mediaUrl);
                 console.log(res);
                 navigate('/Edit-Quiz/' + quiz_pk);
             } catch (error) {
@@ -57,6 +58,9 @@ function CreateQuestion( {isAuthenticated}: any) {
                         options={question_type}
                         value={question_type.find(option => option.value === formData.answer_type)}
                         onChange={(e: any) => {setFormData({ ...formData, answer_type: e.value })}} /><br></br>
+            <TextInput  name='mediaUrl'
+                        value={mediaUrl}
+                        onChange={(e: any) => onChange(e)}>Obraz/Wideo URL</TextInput>
             <Button className="primary" type="submit">Stwórz</Button>
         </form>
         </>
