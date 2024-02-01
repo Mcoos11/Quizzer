@@ -38,7 +38,7 @@ function App() {
             <Route path="/Create-Question/:quiz_pk" element={<CreateQuestion />} />
             <Route path="/Edit-Question/:quiz_pk/:question_pk" element={<EditQuestion />} />
             <Route path="/Create-Answer/:quiz_pk/:question_pk" element={<CreateAnswer />} />
-            <Route path="/Quiz" element={<Quiz />} />
+            <Route path="/Quiz/:quiz_pk" element={<Quiz />} />
             <Route path="/Courses" element={<Courses />} />
             <Route path="/QuestionGenerator" element={<QuestionGenerator />} />
           </Routes>

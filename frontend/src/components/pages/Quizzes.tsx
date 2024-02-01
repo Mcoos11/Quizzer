@@ -12,7 +12,8 @@ function Quizzes() {
         results: [{
             name: "",
             topic: "",
-            author: 0
+            author: 0,
+            pk: 0
         }],
         users_names: []
     });
@@ -70,7 +71,7 @@ function Quizzes() {
             <QuizEntry name="Geografia" description={desc} author="Jan Kowalski"></QuizEntry>
             <QuizEntry name="Chemia" description={desc} author="Jan Kowalski"></QuizEntry> */}
             {quizzesList.results.map((item, id) => (
-                <QuizEntry key={id} name={item.name} description={item.topic} author={quizzesList.users_names[item.author]}></QuizEntry>
+                <QuizEntry key={id} pk={item.pk} name={item.name} description={item.topic} author={quizzesList.users_names[item.author]}></QuizEntry>
             ))}
 
         </>
