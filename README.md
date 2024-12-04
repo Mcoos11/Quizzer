@@ -7,8 +7,9 @@ Najważniejsze założenia:
   <li>Przechowywanie obrazów w bazie w formie zakodowanej w base64</li>
   <li>Komunikacja REST</li>
 </ol>
-
-<img src="https://github.com/user-attachments/assets/7c1406d8-81fc-4a13-a1e0-19a98acb39c8" width="200">
+<br>
+<img src="https://github.com/user-attachments/assets/7c1406d8-81fc-4a13-a1e0-19a98acb39c8" width="500">
+<br>
 
 **dane logowania przykładowy user**
 <br/>_Login:_ quizzer12.noreply@gmail.com
