@@ -1,7 +1,7 @@
 # Quizzer
 Aplikacja do tworzenia (taże automatycznie - ML) i zarządznia quizami oraz częściami składowymi quizu tj. pytania z odpowiedziami. Aplikacja została oparta na mikrousługach z wykorzystaniem DRF.
 
-![archi](https://github.com/user-attachments/assets/7c1406d8-81fc-4a13-a1e0-19a98acb39c8){ width: 100px; }
+![archi]{width: 100px;}(https://github.com/user-attachments/assets/7c1406d8-81fc-4a13-a1e0-19a98acb39c8)
 
 
 **dane logowania przykładowy user**
